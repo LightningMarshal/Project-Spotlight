@@ -10,13 +10,16 @@
   const landing = window.Uptrack.views && window.Uptrack.views.landing;
   const filters = window.Uptrack.filters;
 
+  const BACKUP_NAG_DAYS = 14;
+
   async function render(root) {
     ui.clear(root);
 
-    const [notes, allEntries, archivedEntries] = await Promise.all([
+    const [notes, allEntries, archivedEntries, lastBackupAt] = await Promise.all([
       db.getAllTaxonomyNotes(),
       db.getAllEntries(),
-      db.getAllEntries({ includeArchived: true }).then(function (a) { return a.filter(function (e) { return e.archived; }); })
+      db.getAllEntries({ includeArchived: true }).then(function (a) { return a.filter(function (e) { return e.archived; }); }),
+      db.getSetting('lastBackupAt')
     ]);
 
     root.appendChild(ui.el('div', { class: 'page-header' }, [
@@ -25,6 +28,10 @@
         ui.el('div', { class: 'page-sub' }, 'Reference notes, archive, backup, review export')
       ])
     ]));
+
+    /* Backup nag — surfaces when backup is missing or stale. */
+    const nag = renderBackupNag(lastBackupAt, function () { render(root); });
+    if (nag) root.appendChild(nag);
 
     /* Performance Review export */
     root.appendChild(ui.el('h2', { class: 'section-title' }, 'Performance review export'));
@@ -128,13 +135,52 @@
         ui.el('div', { class: 'btn-row' }, [
           ui.el('button', { class: 'btn primary', onclick: async function () {
             await window.Uptrack.export.runFullBackup();
-            note.textContent = 'Backup generated ' + new Date().toLocaleString();
+            const now = new Date();
+            await db.setSetting('lastBackupAt', now.toISOString());
+            note.textContent = 'Backup generated ' + now.toLocaleString();
             ui.toast('Backup downloaded');
+            /* Re-render the parent Settings view so the 14-day nag clears. */
+            onChange();
           } }, 'Download full backup'),
           ui.el('button', { class: 'btn', onclick: function () { restoreInput.click(); } }, 'Restore from backup'),
           restoreInput
         ])
       ])
+    ]);
+  }
+
+  /* 14-day backup nag card. Returns null if not needed. */
+  function renderBackupNag(lastBackupAt, onBackupDone) {
+    let message;
+    if (!lastBackupAt) {
+      message = 'You have never backed up. On file:// origins, browser storage can be cleared unexpectedly — download a backup now to protect your data.';
+    } else {
+      const ageMs = Date.now() - new Date(lastBackupAt).getTime();
+      const ageDays = Math.floor(ageMs / 86400000);
+      if (ageDays < BACKUP_NAG_DAYS) return null;
+      message = 'Your last backup was ' + ageDays + ' days ago. On file:// origins, browser storage can be cleared unexpectedly — download a fresh backup now.';
+    }
+
+    return ui.el('div', {
+      class: 'form',
+      style: {
+        borderLeft: '3px solid var(--draft)',
+        marginBottom: '20px',
+        background: 'linear-gradient(to right, rgba(201,161,90,0.06), var(--surface) 30%)'
+      }
+    }, [
+      ui.el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } }, [
+        ui.el('span', { class: 'badge draft' }, 'Backup overdue'),
+        ui.el('span', { class: 'text-faint', style: { fontSize: '11px' } },
+          lastBackupAt ? 'Last backup ' + new Date(lastBackupAt).toLocaleString() : 'Never backed up')
+      ]),
+      ui.el('div', { class: 'text-dim', style: { fontSize: '13px', marginBottom: '14px' } }, message),
+      ui.el('button', { class: 'btn primary', onclick: async function () {
+        await window.Uptrack.export.runFullBackup();
+        await db.setSetting('lastBackupAt', new Date().toISOString());
+        ui.toast('Backup downloaded');
+        onBackupDone();
+      } }, 'Download backup now')
     ]);
   }
 

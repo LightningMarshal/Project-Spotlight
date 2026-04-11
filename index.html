@@ -3,6 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- Defense-in-depth CSP. The load-bearing directive is `connect-src 'none'`:
+       Uptrack never talks to the network at runtime, and this makes that
+       guarantee enforceable by the browser. On file:// origins, `'self'` for
+       scripts and styles may be lenient in Firefox and stricter in Chromium;
+       if Chromium blocks local script/style loads, these two directives can
+       be relaxed without weakening `connect-src`. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>Uptrack</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>

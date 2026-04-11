@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-"""Tiny zero-dependency static file server for Uptrack.
+"""DEVELOPER / TROUBLESHOOTING ONLY — not for enterprise deployment.
+
+The supported way to run Uptrack is to open index.html directly in a browser
+(a file:// origin). See README.md "Enterprise deployment" for the full story.
+
+This tiny static server exists solely as a recovery fallback: if a particular
+browser misbehaves with IndexedDB on file:// origins, you can point it at a
+localhost origin instead to confirm whether the issue is file:// specific.
+
+DO NOT run this on a managed or shared workstation. Python's http.server is
+not production-safe (the stdlib documentation says so explicitly), and
+long-running Python listeners are commonly flagged by enterprise EDR tools.
 
 Usage:
     python3 serve.py          # serves on http://localhost:8765
     python3 serve.py 9000     # custom port
-
-The server only serves files from the directory in which it is launched.
-Uptrack keeps all data in the browser's IndexedDB — the server is just
-responsible for handing out the HTML/CSS/JS files.
 """
 import http.server
 import os

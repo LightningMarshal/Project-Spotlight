@@ -195,6 +195,39 @@
     return out;
   }
 
+  /* ---------- generic settings ---------- */
+
+  async function getSetting(key) {
+    const t = await tx(['settings']);
+    const rec = await wrap(t.objectStore('settings').get(key));
+    return rec ? rec.value : undefined;
+  }
+
+  async function setSetting(key, value) {
+    const t = await tx(['settings'], 'readwrite');
+    await wrap(t.objectStore('settings').put({ key: key, value: value }));
+  }
+
+  /* ---------- persistence probe ----------
+   * Round-trips a probe record to verify IndexedDB reads and writes actually
+   * persist — used at boot time to catch file:// storage quirks (particularly
+   * on Chromium, where file:// origins are partitioned per-directory and may
+   * be cleared unexpectedly).
+   */
+  async function probePersistence() {
+    const probeKey = '__probe__';
+    const probeValue = 'probe-' + Date.now();
+    const t = await tx(['settings'], 'readwrite');
+    const store = t.objectStore('settings');
+    await wrap(store.put({ key: probeKey, value: probeValue }));
+    const roundTrip = await wrap(store.get(probeKey));
+    if (!roundTrip || roundTrip.value !== probeValue) {
+      throw new Error('IndexedDB round-trip failed: wrote "' + probeValue + '", read back "' + (roundTrip && roundTrip.value) + '"');
+    }
+    await wrap(store.delete(probeKey));
+    return true;
+  }
+
   /* ---------- backup / restore ---------- */
 
   async function exportAll() {
@@ -242,6 +275,7 @@
     getAllEntries, getDrafts, archiveEntry,
     savePeopleLog, getPeopleLog, getAllPeopleLogs, deletePeopleLog,
     setTaxonomyNote, getAllTaxonomyNotes,
+    getSetting, setSetting, probePersistence,
     exportAll, restoreAll
   };
 })();

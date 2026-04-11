@@ -39,13 +39,38 @@
     }
   }
 
+  function renderStorageFailureBanner(message, detail) {
+    const ui = window.Uptrack.ui;
+    const root = document.getElementById('view');
+    ui.clear(root);
+    const bannerStyle = {
+      borderLeft: '3px solid var(--impact-critical)',
+      textAlign: 'left',
+      padding: '28px 32px',
+      maxWidth: '780px',
+      margin: '40px auto'
+    };
+    root.appendChild(ui.el('div', { class: 'empty', style: bannerStyle }, [
+      ui.el('div', { style: { color: 'var(--impact-critical)', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '10px', fontWeight: '600' } }, 'Storage check failed'),
+      ui.el('div', { style: { color: 'var(--text)', fontSize: '15px', marginBottom: '12px' } }, message),
+      detail ? ui.el('div', { class: 'mono', style: { color: 'var(--text-faint)', fontSize: '12px', marginBottom: '14px' } }, detail) : null,
+      ui.el('div', { style: { color: 'var(--text-dim)', fontSize: '13px', lineHeight: '1.7' } },
+        'Uptrack has refused to start to protect your data. IndexedDB on file:// origins is unreliable in some browsers — Firefox is the most stable, followed by current Edge/Chrome. See the "Enterprise deployment" section of README.md for browser guidance and fallback options.')
+    ]));
+  }
+
   async function boot() {
     try {
       await window.Uptrack.db.open();
     } catch (err) {
-      const root = document.getElementById('view');
-      root.appendChild(window.Uptrack.ui.el('div', { class: 'empty' },
-        'IndexedDB is unavailable in this browser context: ' + err.message));
+      renderStorageFailureBanner('IndexedDB is unavailable in this browser context.', err && err.message);
+      return;
+    }
+
+    try {
+      await window.Uptrack.db.probePersistence();
+    } catch (err) {
+      renderStorageFailureBanner('IndexedDB failed a round-trip read/write probe. Your browser may not persist data reliably on file:// origins.', err && err.message);
       return;
     }
 
