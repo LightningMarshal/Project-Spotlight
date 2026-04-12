@@ -74,6 +74,12 @@
       return;
     }
 
+    /* Restore saved theme preference (default: dark) */
+    try {
+      var theme = await window.Uptrack.db.getSetting('theme');
+      if (theme) document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) { /* non-fatal */ }
+
     window.addEventListener('hashchange', router);
 
     /* Global keyboard shortcut: '/' focuses quick capture on landing */
