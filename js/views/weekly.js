@@ -21,12 +21,6 @@
 
     const weekStart = ui.startOfWeek(state.anchor);
     const weekEnd   = ui.endOfWeek(state.anchor);
-    const fromIso = ui.toIso(weekStart);
-    const toIso   = ui.toIso(weekEnd);
-
-    /* Restrict to this week regardless of explicit filters */
-    const weekFilters = Object.assign({}, state.filters, { dateFrom: fromIso, dateTo: toIso });
-    const weekEntries = filters.apply(allEntries, weekFilters);
 
     root.appendChild(ui.el('div', { class: 'page-header' }, [
       ui.el('div', null, [
@@ -43,62 +37,78 @@
     const panel = filters.renderPanel({
       initial: state.filters,
       showStatus: true,
-      onChange: function (f) { state.filters = f; rerender(); }
+      onChange: function (f) { state.filters = f; updateContent(); }
     });
     root.appendChild(panel.node);
 
-    /* Summary */
-    const summary = buildSummary(weekEntries, weekStart, weekEnd);
-    const summaryBlock = ui.el('div', { class: 'summary-block' }, [
-      ui.el('h3', null, 'Week at a glance'),
-      summary
-    ]);
-    root.appendChild(summaryBlock);
+    /* Dynamic content container — rebuilt on filter change without destroying the filter panel */
+    const content = ui.el('div', null);
+    root.appendChild(content);
 
-    /* Export this week button */
-    root.appendChild(ui.el('div', { class: 'btn-row', style: { marginBottom: '20px' } }, [
-      ui.el('button', { class: 'btn', onclick: function () {
-        window.Uptrack.export.runGeneralTextExport(weekEntries, weekFilters, ui.longDate(weekStart) + ' → ' + ui.longDate(weekEnd));
-      } }, 'Export week (text)'),
-      ui.el('button', { class: 'btn', onclick: function () {
-        window.Uptrack.export.runGeneralCsvExport(weekEntries);
-      } }, 'Export week (CSV)')
-    ]));
+    function updateContent() {
+      ui.clear(content);
+      var ws = ui.startOfWeek(state.anchor);
+      var we = ui.endOfWeek(state.anchor);
+      var fromIso = ui.toIso(ws);
+      var toIso   = ui.toIso(we);
+      var weekFilters = Object.assign({}, state.filters, { dateFrom: fromIso, dateTo: toIso });
+      var weekEntries = filters.apply(allEntries, weekFilters);
 
-    /* Grouped entries */
-    const grouped = ui.el('section', { class: 'section' }, [
-      ui.el('h2', { class: 'section-title' }, 'Entries — ' + weekEntries.length)
-    ]);
+      /* Summary */
+      var summary = buildSummary(weekEntries, ws, we);
+      content.appendChild(ui.el('div', { class: 'summary-block' }, [
+        ui.el('h3', null, 'Week at a glance'),
+        summary
+      ]));
 
-    if (!weekEntries.length) {
-      grouped.appendChild(ui.el('div', { class: 'empty' }, 'No entries this week match your filters.'));
-    } else {
-      for (const d of tax.DOMAINS) {
-        const inDom = weekEntries.filter(function (e) { return e.domain === d; });
-        if (!inDom.length) continue;
-        grouped.appendChild(ui.el('div', { class: 'group-heading' }, d + '  (' + inDom.length + ')'));
-        for (const lvl of ['Critical', 'High', 'Medium', 'Low']) {
-          const ins = inDom.filter(function (e) { return e.impact === lvl; });
-          if (!ins.length) continue;
-          grouped.appendChild(ui.el('div', { class: 'subgroup-heading' }, 'Impact — ' + lvl));
-          const list = ui.el('div', { class: 'entry-list' });
-          ins.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-          ins.forEach(function (e) { list.appendChild(landing.renderCard(e, function () { render(root); })); });
-          grouped.appendChild(list);
+      /* Export buttons */
+      content.appendChild(ui.el('div', { class: 'btn-row', style: { marginBottom: '20px' } }, [
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runGeneralTextExport(weekEntries, weekFilters, ui.longDate(ws) + ' → ' + ui.longDate(we));
+        } }, 'Export week (text)'),
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runGeneralCsvExport(weekEntries);
+        } }, 'Export week (CSV)')
+      ]));
+
+      /* Grouped entries */
+      var grouped = ui.el('section', { class: 'section' }, [
+        ui.el('h2', { class: 'section-title' }, 'Entries — ' + weekEntries.length)
+      ]);
+
+      if (!weekEntries.length) {
+        grouped.appendChild(ui.el('div', { class: 'empty' }, 'No entries this week match your filters.'));
+      } else {
+        for (var di = 0; di < tax.DOMAINS.length; di++) {
+          var d = tax.DOMAINS[di];
+          var inDom = weekEntries.filter(function (e) { return e.domain === d; });
+          if (!inDom.length) continue;
+          grouped.appendChild(ui.el('div', { class: 'group-heading' }, d + '  (' + inDom.length + ')'));
+          var levels = ['Critical', 'High', 'Medium', 'Low'];
+          for (var li = 0; li < levels.length; li++) {
+            var lvl = levels[li];
+            var ins = inDom.filter(function (e) { return e.impact === lvl; });
+            if (!ins.length) continue;
+            grouped.appendChild(ui.el('div', { class: 'subgroup-heading' }, 'Impact — ' + lvl));
+            var list = ui.el('div', { class: 'entry-list' });
+            ins.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+            ins.forEach(function (e) { list.appendChild(landing.renderCard(e, function () { render(root); })); });
+            grouped.appendChild(list);
+          }
+        }
+        /* Any entries without domain */
+        var uncat = weekEntries.filter(function (e) { return !e.domain; });
+        if (uncat.length) {
+          grouped.appendChild(ui.el('div', { class: 'group-heading' }, 'No domain'));
+          var ulist = ui.el('div', { class: 'entry-list' });
+          uncat.forEach(function (e) { ulist.appendChild(landing.renderCard(e, function () { render(root); })); });
+          grouped.appendChild(ulist);
         }
       }
-      /* Any entries without domain or impact */
-      const uncat = weekEntries.filter(function (e) { return !e.domain; });
-      if (uncat.length) {
-        grouped.appendChild(ui.el('div', { class: 'group-heading' }, 'No domain'));
-        const list = ui.el('div', { class: 'entry-list' });
-        uncat.forEach(function (e) { list.appendChild(landing.renderCard(e, function () { render(root); })); });
-        grouped.appendChild(list);
-      }
+      content.appendChild(grouped);
     }
-    root.appendChild(grouped);
 
-    function rerender() { render(root); }
+    updateContent();
   }
 
   function offsetWeek(d, weeks) {

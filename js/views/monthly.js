@@ -21,12 +21,7 @@
 
     const monthStart = ui.startOfMonth(state.anchor);
     const monthEnd   = ui.endOfMonth(state.anchor);
-    const fromIso = ui.toIso(monthStart);
-    const toIso   = ui.toIso(monthEnd);
     const monthK = ui.monthKey(state.anchor);
-
-    const monthFilters = Object.assign({}, state.filters, { dateFrom: fromIso, dateTo: toIso });
-    const monthEntries = filters.apply(allEntries, monthFilters);
 
     /* Header */
     root.appendChild(ui.el('div', { class: 'page-header' }, [
@@ -50,41 +45,58 @@
     const panel = filters.renderPanel({
       initial: state.filters,
       showStatus: true,
-      onChange: function (f) { state.filters = f; render(root); }
+      onChange: function (f) { state.filters = f; updateContent(); }
     });
     root.appendChild(panel.node);
 
-    /* Charts */
-    root.appendChild(ui.el('h2', { class: 'section-title' }, 'This month at a glance'));
-    root.appendChild(renderMonthCharts(monthEntries));
+    /* Dynamic content container — rebuilt on filter change without destroying the filter panel */
+    const content = ui.el('div', null);
+    root.appendChild(content);
 
-    /* Export controls */
-    root.appendChild(ui.el('div', { class: 'btn-row', style: { margin: '18px 0' } }, [
-      ui.el('button', { class: 'btn', onclick: function () {
-        window.Uptrack.export.runGeneralTextExport(monthEntries, monthFilters, ui.monthLabel(monthStart));
-      } }, 'Export month (text)'),
-      ui.el('button', { class: 'btn', onclick: function () {
-        window.Uptrack.export.runGeneralCsvExport(monthEntries);
-      } }, 'Export month (CSV)')
-    ]));
+    function updateContent() {
+      ui.clear(content);
+      var ms = ui.startOfMonth(state.anchor);
+      var me = ui.endOfMonth(state.anchor);
+      var fromIso = ui.toIso(ms);
+      var toIso   = ui.toIso(me);
+      var monthFilters = Object.assign({}, state.filters, { dateFrom: fromIso, dateTo: toIso });
+      var monthEntries = filters.apply(allEntries, monthFilters);
 
-    /* Entries list grouped */
-    const section = ui.el('section', { class: 'section' }, [
-      ui.el('h2', { class: 'section-title' }, 'Entries — ' + monthEntries.length)
-    ]);
-    if (!monthEntries.length) {
-      section.appendChild(ui.el('div', { class: 'empty' }, 'No entries this month.'));
-    } else {
-      for (const d of tax.DOMAINS) {
-        const inDom = monthEntries.filter(function (e) { return e.domain === d; });
-        if (!inDom.length) continue;
-        section.appendChild(ui.el('div', { class: 'group-heading' }, d + '  (' + inDom.length + ')'));
-        const list = ui.el('div', { class: 'entry-list' });
-        inDom.forEach(function (e) { list.appendChild(landing.renderCard(e, function () { render(root); })); });
-        section.appendChild(list);
+      /* Charts */
+      content.appendChild(ui.el('h2', { class: 'section-title' }, 'This month at a glance'));
+      content.appendChild(renderMonthCharts(monthEntries));
+
+      /* Export controls */
+      content.appendChild(ui.el('div', { class: 'btn-row', style: { margin: '18px 0' } }, [
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runGeneralTextExport(monthEntries, monthFilters, ui.monthLabel(ms));
+        } }, 'Export month (text)'),
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runGeneralCsvExport(monthEntries);
+        } }, 'Export month (CSV)')
+      ]));
+
+      /* Entries list grouped */
+      var section = ui.el('section', { class: 'section' }, [
+        ui.el('h2', { class: 'section-title' }, 'Entries — ' + monthEntries.length)
+      ]);
+      if (!monthEntries.length) {
+        section.appendChild(ui.el('div', { class: 'empty' }, 'No entries this month.'));
+      } else {
+        for (var di = 0; di < tax.DOMAINS.length; di++) {
+          var d = tax.DOMAINS[di];
+          var inDom = monthEntries.filter(function (e) { return e.domain === d; });
+          if (!inDom.length) continue;
+          section.appendChild(ui.el('div', { class: 'group-heading' }, d + '  (' + inDom.length + ')'));
+          var list = ui.el('div', { class: 'entry-list' });
+          inDom.forEach(function (e) { list.appendChild(landing.renderCard(e, function () { render(root); })); });
+          section.appendChild(list);
+        }
       }
+      content.appendChild(section);
     }
-    root.appendChild(section);
+
+    updateContent();
   }
 
   function offsetMonth(d, months) {

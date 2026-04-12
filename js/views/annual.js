@@ -23,13 +23,6 @@
       db.getAllPeopleLogs()
     ]);
 
-    const yearStart = new Date(state.year, 0, 1);
-    const yearEnd   = new Date(state.year, 11, 31);
-    const fromIso = ui.toIso(yearStart);
-    const toIso   = ui.toIso(yearEnd);
-
-    const yearFilters = Object.assign({}, state.filters, { dateFrom: fromIso, dateTo: toIso });
-    const yearEntries = filters.apply(allEntries, yearFilters);
     const yearLogs = allLogs.filter(function (l) { return l.month.startsWith(state.year + '-'); });
 
     /* Header */
@@ -45,83 +38,100 @@
       ])
     ]));
 
-    /* Stats */
-    const complete = yearEntries.filter(function (e) { return e.status === 'complete'; });
-    const criticals = yearEntries.filter(function (e) { return e.impact === 'Critical'; });
-    const highs     = yearEntries.filter(function (e) { return e.impact === 'High'; });
-    root.appendChild(ui.el('div', { class: 'stats-row' }, [
-      stat('Total entries', yearEntries.length),
-      stat('Completed', complete.length),
-      stat('Critical impact', criticals.length),
-      stat('High impact', highs.length),
-      stat('People logs', yearLogs.length)
-    ]));
-
     /* Filters */
     const panel = filters.renderPanel({
       initial: state.filters,
       showStatus: true,
-      onChange: function (f) { state.filters = f; render(root); }
+      onChange: function (f) { state.filters = f; updateContent(); }
     });
     root.appendChild(panel.node);
 
-    /* Charts */
-    const grid = ui.el('div', { class: 'charts-grid' });
-    grid.appendChild(chartCard('Volume by month', charts.lineChart(charts.volumeOverTime(yearEntries, 'month'))));
-    grid.appendChild(chartCard('Entries by domain', charts.barChart(charts.byDomain(yearEntries))));
-    grid.appendChild(chartCard('Impact by domain (stacked)', charts.stackedBarChart(charts.impactByDomain(yearEntries))));
-    grid.appendChild(chartCard('Impact distribution', charts.barChart(charts.byImpact(yearEntries))));
-    grid.appendChild(chartCard('Company values — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'values'))));
-    grid.appendChild(chartCard('Culture tenets — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'tenets'))));
-    grid.appendChild(chartCard('Principles — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'principles'))));
-    grid.appendChild(chartCard('Taxonomy gap indicator', charts.gapIndicator(charts.gapData(yearEntries))));
-    root.appendChild(grid);
+    /* Dynamic content container — rebuilt on filter change without destroying the filter panel */
+    const content = ui.el('div', null);
+    root.appendChild(content);
 
-    /* Monthly rollup */
-    const rollup = ui.el('section', { class: 'section' }, [ui.el('h2', { class: 'section-title' }, 'Month by month')]);
-    const monthly = rollupByMonth(yearEntries);
-    for (let m = 0; m < 12; m++) {
-      const label = new Date(state.year, m, 1).toLocaleDateString(undefined, { month: 'long' });
-      const items = monthly[m] || [];
-      rollup.appendChild(ui.el('div', { class: 'group-heading' }, label + '  (' + items.length + ')'));
-      if (!items.length) {
-        rollup.appendChild(ui.el('div', { class: 'text-faint', style: { fontSize: '12px', paddingLeft: '4px' } }, 'no entries'));
-      } else {
-        for (const d of tax.DOMAINS) {
-          const dItems = items.filter(function (e) { return e.domain === d; });
-          if (!dItems.length) continue;
-          rollup.appendChild(ui.el('div', { class: 'subgroup-heading' }, d + ' — ' + dItems.length));
+    function updateContent() {
+      ui.clear(content);
+      var yearStart = new Date(state.year, 0, 1);
+      var yearEnd   = new Date(state.year, 11, 31);
+      var fromIso = ui.toIso(yearStart);
+      var toIso   = ui.toIso(yearEnd);
+      var yearFilters = Object.assign({}, state.filters, { dateFrom: fromIso, dateTo: toIso });
+      var yearEntries = filters.apply(allEntries, yearFilters);
+
+      /* Stats */
+      var complete  = yearEntries.filter(function (e) { return e.status === 'complete'; });
+      var criticals = yearEntries.filter(function (e) { return e.impact === 'Critical'; });
+      var highs     = yearEntries.filter(function (e) { return e.impact === 'High'; });
+      content.appendChild(ui.el('div', { class: 'stats-row' }, [
+        stat('Total entries', yearEntries.length),
+        stat('Completed', complete.length),
+        stat('Critical impact', criticals.length),
+        stat('High impact', highs.length),
+        stat('People logs', yearLogs.length)
+      ]));
+
+      /* Charts */
+      var grid = ui.el('div', { class: 'charts-grid' });
+      grid.appendChild(chartCard('Volume by month', charts.lineChart(charts.volumeOverTime(yearEntries, 'month'))));
+      grid.appendChild(chartCard('Entries by domain', charts.barChart(charts.byDomain(yearEntries))));
+      grid.appendChild(chartCard('Impact by domain (stacked)', charts.stackedBarChart(charts.impactByDomain(yearEntries))));
+      grid.appendChild(chartCard('Impact distribution', charts.barChart(charts.byImpact(yearEntries))));
+      grid.appendChild(chartCard('Company values — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'values'))));
+      grid.appendChild(chartCard('Culture tenets — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'tenets'))));
+      grid.appendChild(chartCard('Principles — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'principles'))));
+      grid.appendChild(chartCard('Taxonomy gap indicator', charts.gapIndicator(charts.gapData(yearEntries))));
+      content.appendChild(grid);
+
+      /* Monthly rollup */
+      var rollup = ui.el('section', { class: 'section' }, [ui.el('h2', { class: 'section-title' }, 'Month by month')]);
+      var monthly = rollupByMonth(yearEntries);
+      for (var m = 0; m < 12; m++) {
+        var label = new Date(state.year, m, 1).toLocaleDateString(undefined, { month: 'long' });
+        var items = monthly[m] || [];
+        rollup.appendChild(ui.el('div', { class: 'group-heading' }, label + '  (' + items.length + ')'));
+        if (!items.length) {
+          rollup.appendChild(ui.el('div', { class: 'text-faint', style: { fontSize: '12px', paddingLeft: '4px' } }, 'no entries'));
+        } else {
+          for (var di = 0; di < tax.DOMAINS.length; di++) {
+            var d = tax.DOMAINS[di];
+            var dItems = items.filter(function (e) { return e.domain === d; });
+            if (!dItems.length) continue;
+            rollup.appendChild(ui.el('div', { class: 'subgroup-heading' }, d + ' — ' + dItems.length));
+          }
         }
       }
-    }
-    root.appendChild(rollup);
+      content.appendChild(rollup);
 
-    /* People logs summary */
-    if (yearLogs.length) {
-      const pls = ui.el('section', { class: 'section' }, [ui.el('h2', { class: 'section-title' }, 'People management — ' + state.year)]);
-      const totals = {};
-      tax.PEOPLE_METRICS.forEach(function (m) { totals[m.key] = 0; });
-      yearLogs.forEach(function (l) {
-        Object.keys(l.metrics || {}).forEach(function (k) {
-          totals[k] = (totals[k] || 0) + ((l.metrics[k] && l.metrics[k].count) || 0);
+      /* People logs summary */
+      if (yearLogs.length) {
+        var pls = ui.el('section', { class: 'section' }, [ui.el('h2', { class: 'section-title' }, 'People management — ' + state.year)]);
+        var totals = {};
+        tax.PEOPLE_METRICS.forEach(function (m) { totals[m.key] = 0; });
+        yearLogs.forEach(function (l) {
+          Object.keys(l.metrics || {}).forEach(function (k) {
+            totals[k] = (totals[k] || 0) + ((l.metrics[k] && l.metrics[k].count) || 0);
+          });
         });
-      });
-      const data = tax.PEOPLE_METRICS.map(function (m) {
-        return { label: m.label, value: totals[m.key] || 0 };
-      });
-      pls.appendChild(chartCard('Year totals', charts.horizontalBarChart(data, { rowH: 24 })));
-      root.appendChild(pls);
+        var data = tax.PEOPLE_METRICS.map(function (m) {
+          return { label: m.label, value: totals[m.key] || 0 };
+        });
+        pls.appendChild(chartCard('Year totals', charts.horizontalBarChart(data, { rowH: 24 })));
+        content.appendChild(pls);
+      }
+
+      /* Export */
+      content.appendChild(ui.el('div', { class: 'btn-row', style: { marginTop: '20px' } }, [
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runGeneralTextExport(yearEntries, yearFilters, state.year + ' (full year)');
+        } }, 'Export year (text)'),
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runGeneralCsvExport(yearEntries);
+        } }, 'Export year (CSV)')
+      ]));
     }
 
-    /* Export */
-    root.appendChild(ui.el('div', { class: 'btn-row', style: { marginTop: '20px' } }, [
-      ui.el('button', { class: 'btn', onclick: function () {
-        window.Uptrack.export.runGeneralTextExport(yearEntries, yearFilters, state.year + ' (full year)');
-      } }, 'Export year (text)'),
-      ui.el('button', { class: 'btn', onclick: function () {
-        window.Uptrack.export.runGeneralCsvExport(yearEntries);
-      } }, 'Export year (CSV)')
-    ]));
+    updateContent();
   }
 
   function rollupByMonth(entries) {
