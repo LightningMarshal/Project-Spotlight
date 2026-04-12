@@ -127,7 +127,10 @@
         } }, 'Export year (text)'),
         ui.el('button', { class: 'btn', onclick: function () {
           window.Uptrack.export.runGeneralCsvExport(yearEntries);
-        } }, 'Export year (CSV)')
+        } }, 'Export year (CSV)'),
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runObsidianExport(yearEntries, yearFilters, state.year + ' (full year)');
+        } }, 'Export year (Obsidian)')
       ]));
     }
 

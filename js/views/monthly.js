@@ -79,7 +79,10 @@
         } }, 'Export month (text)'),
         ui.el('button', { class: 'btn', onclick: function () {
           window.Uptrack.export.runGeneralCsvExport(monthEntries);
-        } }, 'Export month (CSV)')
+        } }, 'Export month (CSV)'),
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runObsidianExport(monthEntries, monthFilters, ui.monthLabel(ms));
+        } }, 'Export month (Obsidian)')
       ]));
 
       /* Entries list grouped */

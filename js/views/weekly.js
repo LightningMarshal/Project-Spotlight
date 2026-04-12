@@ -68,7 +68,10 @@
         } }, 'Export week (text)'),
         ui.el('button', { class: 'btn', onclick: function () {
           window.Uptrack.export.runGeneralCsvExport(weekEntries);
-        } }, 'Export week (CSV)')
+        } }, 'Export week (CSV)'),
+        ui.el('button', { class: 'btn', onclick: function () {
+          window.Uptrack.export.runObsidianExport(weekEntries, weekFilters, ui.longDate(ws) + ' → ' + ui.longDate(we));
+        } }, 'Export week (Obsidian)')
       ]));
 
       /* Grouped entries */

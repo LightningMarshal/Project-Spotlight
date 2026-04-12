@@ -102,6 +102,10 @@
           window.Uptrack.export.runGeneralCsvExport(matched);
         } }, 'Export CSV'),
         ui.el('button', { class: 'btn', onclick: function () {
+          var rangeLabel2 = (state.audience ? 'Audience: ' + state.audience + '  |  ' : '') + filters.describe(state.filters);
+          window.Uptrack.export.runObsidianExport(matched, state.filters, rangeLabel2);
+        } }, 'Export Obsidian (MD)'),
+        ui.el('button', { class: 'btn', onclick: function () {
           var text = window.Uptrack.export.generalText(matched, state.filters,
             (state.audience ? 'Audience: ' + state.audience : 'Stakeholder view'));
           previewText(text);

@@ -223,6 +223,134 @@
     return lines.join('\n');
   }
 
+  /* ---------- Obsidian-compatible markdown ---------- */
+
+  function obsidianMarkdown(entries, filterState, rangeLabel) {
+    var lines = [];
+
+    entries.forEach(function (e, idx) {
+      if (idx > 0) lines.push('', '---', '');
+
+      /* YAML frontmatter */
+      lines.push('---');
+      lines.push('title: "' + yamlEscape(e.title) + '"');
+      lines.push('date: ' + (e.date || ''));
+      lines.push('status: ' + (e.status || 'draft'));
+      if (e.domain) lines.push('domain: ' + e.domain);
+      if (e.impact) lines.push('impact: ' + e.impact);
+      if (e.individual) lines.push('individual: "' + yamlEscape(e.individual) + '"');
+      if (e.interactionType) lines.push('interaction_type: ' + e.interactionType);
+      if (e.sentiment) lines.push('sentiment: ' + e.sentiment);
+      if (e.customerSentiment) lines.push('customer_sentiment: ' + e.customerSentiment);
+      if (e.developmentTheme) lines.push('development_theme: ' + e.developmentTheme);
+      if (e.companyName) lines.push('company: "' + yamlEscape(e.companyName) + '"');
+      if (e.projectNumber) lines.push('project_number: "' + yamlEscape(e.projectNumber) + '"');
+      if (e.followUpAction) {
+        lines.push('follow_up: "' + yamlEscape(e.followUpAction) + '"');
+        if (e.followUpTargetDate) lines.push('follow_up_target: ' + e.followUpTargetDate);
+        lines.push('follow_up_dismissed: ' + (e.followUpDismissed ? 'true' : 'false'));
+      }
+
+      /* Tags as YAML arrays */
+      var t = e.tags || {};
+      if ((t.values || []).length) {
+        lines.push('values:');
+        t.values.forEach(function (v) { lines.push('  - ' + v); });
+      }
+      if ((t.tenets || []).length) {
+        lines.push('tenets:');
+        t.tenets.forEach(function (v) { lines.push('  - ' + v); });
+      }
+      if ((t.principles || []).length) {
+        lines.push('principles:');
+        t.principles.forEach(function (v) { lines.push('  - ' + v); });
+      }
+      lines.push('---');
+      lines.push('');
+
+      /* Heading */
+      lines.push('# ' + e.title);
+      lines.push('');
+
+      /* Metadata line */
+      var meta = [];
+      if (e.date) meta.push('**Date:** ' + e.date);
+      if (e.domain) meta.push('**Domain:** ' + e.domain);
+      if (e.impact) meta.push('**Impact:** ' + e.impact);
+      if (e.status) meta.push('**Status:** ' + e.status);
+      if (meta.length) lines.push(meta.join(' · '));
+      lines.push('');
+
+      /* Description */
+      if (e.description && e.description.trim()) {
+        lines.push('## Description');
+        lines.push('');
+        lines.push(e.description.trim());
+        lines.push('');
+      }
+
+      /* Domain-specific details */
+      var details = [];
+      if (e.individual) details.push('- **Individual:** ' + e.individual);
+      if (e.interactionType) details.push('- **Interaction Type:** ' + e.interactionType);
+      if (e.meetingDirection) details.push('- **Meeting Direction:** ' + e.meetingDirection);
+      if (e.sentiment) details.push('- **Sentiment:** ' + e.sentiment);
+      if (e.developmentTheme) details.push('- **Development Theme:** ' + e.developmentTheme);
+      if (e.companyName) details.push('- **Company:** ' + e.companyName);
+      if (e.customerSentiment) details.push('- **Customer Sentiment:** ' + e.customerSentiment);
+      if (e.escalationNumber) details.push('- **Escalation Number:** ' + e.escalationNumber);
+      if (e.projectNumber) details.push('- **Project Number:** ' + e.projectNumber);
+
+      if (details.length) {
+        lines.push('## Details');
+        lines.push('');
+        details.forEach(function (d) { lines.push(d); });
+        lines.push('');
+      }
+
+      /* Follow-up */
+      if (e.followUpAction) {
+        lines.push('## Follow-Up');
+        lines.push('');
+        lines.push('- **Action:** ' + e.followUpAction);
+        if (e.followUpDescription) lines.push('- **Description:** ' + e.followUpDescription);
+        if (e.followUpTargetDate) lines.push('- **Target Date:** ' + e.followUpTargetDate);
+        lines.push('- **Status:** ' + (e.followUpDismissed ? 'Dismissed' : 'Open'));
+        lines.push('');
+      }
+
+      /* Hash tags for Obsidian */
+      var hashTags = [];
+      if (e.domain) hashTags.push('#domain/' + slugify(e.domain));
+      if (e.impact) hashTags.push('#impact/' + slugify(e.impact));
+      if (e.status) hashTags.push('#status/' + e.status);
+      (t.values || []).forEach(function (v) { hashTags.push('#value/' + slugify(v)); });
+      (t.tenets || []).forEach(function (v) { hashTags.push('#tenet/' + slugify(v)); });
+      (t.principles || []).forEach(function (v) { hashTags.push('#principle/' + slugify(v)); });
+      if (hashTags.length) {
+        lines.push(hashTags.join(' '));
+        lines.push('');
+      }
+    });
+
+    return lines.join('\n');
+  }
+
+  function yamlEscape(s) {
+    if (!s) return '';
+    return String(s).replace(/"/g, '\\"');
+  }
+
+  function slugify(s) {
+    return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  async function runObsidianExport(entries, filterState, rangeLabel) {
+    var md = obsidianMarkdown(entries, filterState, rangeLabel);
+    download('uptrack-obsidian-' + ts() + '.md', md, 'text/markdown;charset=utf-8');
+    return md;
+  }
+
   /* ---------- full backup ---------- */
 
   async function fullBackup() {
@@ -259,8 +387,8 @@
 
   window.Uptrack = window.Uptrack || {};
   window.Uptrack.export = {
-    generalText, generalCsv, reviewText, fullBackup,
-    runGeneralTextExport, runGeneralCsvExport, runReviewExport, runFullBackup,
+    generalText, generalCsv, reviewText, obsidianMarkdown, fullBackup,
+    runGeneralTextExport, runGeneralCsvExport, runReviewExport, runObsidianExport, runFullBackup,
     download
   };
 })();
