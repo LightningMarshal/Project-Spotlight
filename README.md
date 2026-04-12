@@ -95,10 +95,11 @@ timestamped JSON file. Store it wherever your other personal archive lives
 All data is persisted to IndexedDB in the browser under the database name
 `uptrack`. Object stores:
 
-- `entries` — daily impact entries
-- `peopleLogs` — monthly people-management logs
-- `taxonomyNotes` — your personal reference notes per taxonomy item
-- `settings` — single-value settings (e.g. `lastBackupAt`)
+- `entries` — daily impact entries (with domain-specific fields for People
+  Management, Client Facing, and Project domains)
+- `peopleLogs` — monthly people-management reflections
+- `taxonomyNotes` — reference notes per taxonomy item
+- `settings` — roster, theme preference, reward toggles, `lastBackupAt`
 
 The data is tied to the browser profile and the directory you launched
 `index.html` from (on Chromium-based browsers, file:// storage is
@@ -137,18 +138,41 @@ Every entry can be tagged from all three taxonomies simultaneously:
   Candor, Protect and Delight, Be Accountable, Security First, Innovate to
   Advance, Listen Learn Teach, Speed and Quality
 
+## Domains
+
+Each entry belongs to one of four domains, with domain-specific fields:
+
+- **Operations** — no additional fields
+- **Project** — project number, project URL
+- **People Management** — interaction type, meeting direction, individual
+  (from roster), sentiment, development theme, follow-up action with
+  description and target date
+- **Client Facing** — interaction type, company name, individual, customer
+  sentiment, conditional escalation number/URL (when dissatisfied)
+
 ## Views
 
 - **Today** — quick capture, active drafts, last 7 days
 - **Weekly** — Friday-review summary, grouped by domain → impact
-- **Monthly** — people-management log plus charts and entries
+- **Monthly** — auto-aggregated people management summary with charts,
+  monthly reflection, and entries
 - **Annual** — full year charts, monthly rollup, people-log totals
-- **Stakeholder** — audience-focused filter + export workflow
-- **Settings** — backup nag, reference notes, review export, archive, backup
+- **Data Review** — consolidated visualizations (8 chart cards) and
+  Individual Manager View with sentiment trajectory, development themes,
+  interaction types, and follow-up actions per person
+- **Follow-Ups** — dedicated tracker for open follow-up actions sorted by
+  target date, with dismiss/reopen controls and dismissed toggle
+- **Settings** — roster management (direct/indirect/leadership), theme
+  toggle, audio/confetti toggles, performance review export, archive,
+  backup & restore
+- **Stakeholder** — audience-focused filter + export workflow (accessible
+  via `#/stakeholder`)
 
 ## Exports
 
 - **General** — plain text grouped by domain → impact → date, plus CSV
+- **Obsidian** — markdown with YAML frontmatter, structured headings, and
+  hash tags (`#domain/*`, `#impact/*`, `#value/*`, `#tenet/*`, `#principle/*`)
 - **Performance review** — grouped by company value → culture tenet
 - **Full backup** — single JSON containing every entry, log, and note
 
@@ -159,8 +183,9 @@ index.html
 css/styles.css
 js/taxonomies.js    js/db.js          js/ui.js
 js/filters.js       js/entry.js       js/charts.js      js/export.js
-js/app.js
+js/rewards.js       js/app.js
 js/views/landing.js    js/views/weekly.js    js/views/monthly.js
-js/views/annual.js     js/views/stakeholder.js   js/views/settings.js
+js/views/annual.js     js/views/stakeholder.js   js/views/datareview.js
+js/views/followups.js  js/views/settings.js
 serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
