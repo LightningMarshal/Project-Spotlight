@@ -26,27 +26,28 @@
     return n;
   }
 
-  const GRID_COLOR   = '#2a3142';
-  const AXIS_COLOR   = '#3a4256';
-  const LABEL_COLOR  = '#6b7386';
-  const BAR_COLOR    = '#6ba39a';
-  const EMPTY_COLOR  = '#3a4256';
+  const GRID_COLOR   = '#252d3d';
+  const AXIS_COLOR   = '#323c50';
+  const LABEL_COLOR  = '#5c6578';
+  const BAR_COLOR    = '#e8923e';
+  const EMPTY_COLOR  = '#323c50';
 
   const TAX_COLORS = {
-    values: '#6b8e7b',
-    tenets: '#8b7ba8',
-    principles: '#a89478'
+    values: '#d4a054',
+    tenets: '#c48940',
+    principles: '#b87a30'
   };
   const IMPACT_COLORS = {
-    Low:      '#5c7a8f',
-    Medium:   '#6b94a8',
-    High:     '#c89158',
-    Critical: '#c66a5c'
+    Low:      '#7a8594',
+    Medium:   '#d4a054',
+    High:     '#e8883a',
+    Critical: '#d95535'
   };
   const DOMAIN_COLORS = {
-    'Operations':        '#6ba39a',
-    'Project':           '#8b9fc4',
-    'People Management': '#c4a45f'
+    'Operations':        '#e8923e',
+    'Project':           '#d4a054',
+    'People Management': '#c48940',
+    'Client Facing':     '#b87a30'
   };
 
   function empty(message) {
@@ -160,7 +161,7 @@
     }
     children.push(sn('path', { d: pathD, stroke: BAR_COLOR, 'stroke-width': 2, fill: 'none', 'stroke-linejoin': 'round' }));
     points.forEach(function (p) {
-      children.push(sn('circle', { cx: p.x, cy: p.y, r: 3, fill: '#141821', stroke: BAR_COLOR, 'stroke-width': 1.5 }));
+      children.push(sn('circle', { cx: p.x, cy: p.y, r: 3, fill: '#131820', stroke: BAR_COLOR, 'stroke-width': 1.5 }));
     });
 
     // X labels — thin them out if crowded
@@ -253,7 +254,7 @@
       const isGap = it.max > 0 && ratio < 0.5;
 
       children.push(sn('text', { x: padL - 8, y: y + rowH / 2 + 1, 'text-anchor': 'end', fill: isGap ? '#c89158' : LABEL_COLOR, 'font-size': 11 }, truncateLabel(it.label, 22)));
-      children.push(sn('rect', { x: padL, y: y, width: innerW, height: rowH - 8, fill: '#1e2430', rx: 2 }));
+      children.push(sn('rect', { x: padL, y: y, width: innerW, height: rowH - 8, fill: '#1a2030', rx: 2 }));
       children.push(sn('rect', { x: padL, y: y, width: barW, height: rowH - 8, fill: it.color || BAR_COLOR, rx: 2, opacity: isGap ? 0.5 : 0.95 }));
       children.push(sn('text', { x: padL + innerW + 6, y: y + rowH / 2 + 1, fill: isGap ? '#c89158' : '#9aa3b4', 'font-size': 11, 'font-family': 'monospace' }, it.value));
     });
