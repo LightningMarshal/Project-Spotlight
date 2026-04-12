@@ -175,6 +175,7 @@
               const saved = await db.saveEntry(working);
               working.id = saved.id;
               ui.toast('Entry saved as complete');
+              if (window.Uptrack.rewards) window.Uptrack.rewards.fire();
               if (opts.onChange) opts.onChange(saved);
               ui.closeModal();
             }

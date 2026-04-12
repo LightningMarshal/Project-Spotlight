@@ -59,6 +59,10 @@
     ]);
     root.appendChild(qc);
 
+    /* Tagline */
+    root.appendChild(ui.el('div', { class: 'tagline' },
+      'Ending satisfactory cyber risk outcomes through relentless commitment to security excellence, people-first leadership, and operational precision.'));
+
     setTimeout(function () { input.focus(); }, 20);
 
     /* Drafts — prominent */
