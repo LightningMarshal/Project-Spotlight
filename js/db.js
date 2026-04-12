@@ -76,6 +76,24 @@
         tenets: Array.isArray(e.tags && e.tags.tenets) ? e.tags.tenets.slice() : [],
         principles: Array.isArray(e.tags && e.tags.principles) ? e.tags.principles.slice() : []
       },
+      /* Domain-specific fields — People Management */
+      interactionType: e.interactionType || '',
+      meetingDirection: e.meetingDirection || '',
+      individual: e.individual || '',
+      sentiment: e.sentiment || '',
+      developmentTheme: e.developmentTheme || '',
+      followUpAction: e.followUpAction || '',
+      followUpDescription: e.followUpDescription || '',
+      followUpTargetDate: e.followUpTargetDate || '',
+      followUpDismissed: !!e.followUpDismissed,
+      /* Domain-specific fields — Client Facing */
+      companyName: e.companyName || '',
+      customerSentiment: e.customerSentiment || '',
+      escalationNumber: e.escalationNumber || '',
+      escalationUrl: e.escalationUrl || '',
+      /* Domain-specific fields — Project */
+      projectNumber: e.projectNumber || '',
+      projectUrl: e.projectUrl || '',
       archived: !!e.archived,
       createdAt: e.createdAt || now,
       updatedAt: now

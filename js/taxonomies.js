@@ -1,5 +1,5 @@
-/* Taxonomies, domains, impact levels, and people-management metric definitions.
- * These are fixed per the application specification.
+/* Taxonomies, domains, impact levels, domain-specific field definitions,
+ * and people-management metric definitions.
  */
 (function () {
   'use strict';
@@ -37,7 +37,7 @@
 
   const TAXONOMY_KEYS = ['values', 'tenets', 'principles'];
 
-  const DOMAINS = ['Operations', 'Project', 'People Management'];
+  const DOMAINS = ['Operations', 'Project', 'People Management', 'Client Facing'];
 
   const IMPACT_LEVELS = ['Low', 'Medium', 'High', 'Critical'];
   const IMPACT_RANK = { Low: 1, Medium: 2, High: 3, Critical: 4 };
@@ -47,6 +47,13 @@
     High: 'impact-high',
     Critical: 'impact-critical'
   };
+
+  /* Domain-specific field enums */
+  const INTERACTION_TYPES = ['One-on-One', 'Team Meeting', 'Skip-Level', 'Coaching', 'Feedback', 'Ad Hoc', 'Email', 'Chat', 'Other'];
+  const MEETING_DIRECTIONS = ['I Called', 'They Called', 'Scheduled', 'Walk-In'];
+  const SENTIMENTS = ['Very Positive', 'Positive', 'Neutral', 'Negative', 'Very Negative'];
+  const DEVELOPMENT_THEMES = ['Career Growth', 'Skill Building', 'Performance', 'Engagement', 'Onboarding', 'Transition', 'Retention', 'Other'];
+  const CUSTOMER_SENTIMENTS = ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied'];
 
   /* People management monthly log metrics */
   const PEOPLE_METRICS = [
@@ -74,6 +81,30 @@
     return { month, metrics };
   }
 
+  /* Returns empty domain-specific fields object */
+  function emptyDomainFields() {
+    return {
+      // People Management fields
+      interactionType: '',
+      meetingDirection: '',
+      individual: '',
+      sentiment: '',
+      developmentTheme: '',
+      followUpAction: '',
+      followUpDescription: '',
+      followUpTargetDate: '',
+      followUpDismissed: false,
+      // Client Facing fields
+      companyName: '',
+      customerSentiment: '',
+      escalationNumber: '',
+      escalationUrl: '',
+      // Project fields
+      projectNumber: '',
+      projectUrl: ''
+    };
+  }
+
   window.Uptrack = window.Uptrack || {};
   window.Uptrack.tax = {
     TAXONOMIES,
@@ -82,8 +113,14 @@
     IMPACT_LEVELS,
     IMPACT_RANK,
     IMPACT_CLASS,
+    INTERACTION_TYPES,
+    MEETING_DIRECTIONS,
+    SENTIMENTS,
+    DEVELOPMENT_THEMES,
+    CUSTOMER_SENTIMENTS,
     PEOPLE_METRICS,
     emptyTags,
-    emptyPeopleLog
+    emptyPeopleLog,
+    emptyDomainFields
   };
 })();
