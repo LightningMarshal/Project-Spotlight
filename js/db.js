@@ -169,6 +169,7 @@
     const rec = {
       month: log.month,
       metrics: log.metrics || {},
+      reflection: log.reflection || '',
       createdAt: log.createdAt || now,
       updatedAt: now
     };
