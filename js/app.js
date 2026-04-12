@@ -11,6 +11,7 @@
     'annual':      { hash: '#/annual',      title: 'Annual',      render: views.annual.render },
     'stakeholder': { hash: '#/stakeholder', title: 'Stakeholder', render: views.stakeholder.render },
     'datareview':  { hash: '#/datareview',  title: 'Data Review', render: views.datareview.render },
+    'followups':   { hash: '#/followups',   title: 'Follow-Ups', render: views.followups.render },
     'settings':    { hash: '#/settings',    title: 'Settings',    render: views.settings.render }
   };
 
