@@ -10,6 +10,7 @@
     'monthly':     { hash: '#/monthly',     title: 'Monthly',     render: views.monthly.render },
     'annual':      { hash: '#/annual',      title: 'Annual',      render: views.annual.render },
     'stakeholder': { hash: '#/stakeholder', title: 'Stakeholder', render: views.stakeholder.render },
+    'datareview':  { hash: '#/datareview',  title: 'Data Review', render: views.datareview.render },
     'settings':    { hash: '#/settings',    title: 'Settings',    render: views.settings.render }
   };
 
