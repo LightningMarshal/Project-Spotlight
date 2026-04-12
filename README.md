@@ -1,5 +1,7 @@
 # Uptrack
 
+**v2.7.0**
+
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
 them across daily, weekly, monthly, and annual horizons, and prepares
@@ -189,3 +191,57 @@ js/views/annual.js     js/views/stakeholder.js   js/views/datareview.js
 js/views/followups.js  js/views/settings.js
 serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
+
+## Changelog
+
+### v2.7.0
+- Obsidian-compatible markdown export with YAML frontmatter and hash tags
+- Export button added to Weekly, Monthly, Annual, and Stakeholder views
+
+### v2.6.0
+- Follow-Up Action Tracker tab with overdue/upcoming/no-date grouping
+- Dismiss/reopen controls and toggle for dismissed items
+
+### v2.5.0
+- Data Review tab with 8 consolidated visualization chart cards
+- Individual Manager View: sentiment trajectory, development themes,
+  interaction types, follow-up actions, and recent entries per person
+
+### v2.4.0
+- Monthly view auto-aggregates People Management entries instead of
+  manual metric input; added monthly reflection textarea
+
+### v2.3.0
+- Client Facing domain with interaction type, company name, individual,
+  customer sentiment, conditional escalation number/URL
+- Domain-specific conditional fields in entry form (People Management,
+  Client Facing, Project)
+
+### v2.2.0
+- Settings overhaul: roster management (direct/indirect/leadership),
+  dark/light mode toggle, audio chime and confetti toggles
+- Removed taxonomy notes from Settings
+
+### v2.1.0
+- Arctic Wolf tagline on Today page
+- Audio chime (Web Audio API) and confetti burst on save-as-complete
+
+### v2.0.0
+- Arctic Wolf brand identity: deep navy backgrounds, amber-orange accent,
+  geometric sans-serif headings, light/dark mode via CSS custom properties
+- Chart colors updated to amber spectrum
+
+### v1.1.1
+- Fix: search input no longer loses focus when typing (content-container
+  pattern applied to all views)
+
+### v1.1.0
+- IndexedDB sanity check on boot with failure banner
+- 14-day backup nag in Settings
+- Content-Security-Policy meta tag with `connect-src 'none'`
+- README with enterprise deployment guidance
+- `serve.py` demoted to developer fallback
+
+### v1.0.0
+- Initial release: quick capture, drafts, daily/weekly/monthly/annual
+  views, stakeholder export, performance review export, full backup/restore
