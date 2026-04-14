@@ -61,7 +61,7 @@
 
     /* Tagline */
     root.appendChild(ui.el('div', { class: 'tagline' },
-      'Ending satisfactory cyber risk outcomes through relentless commitment to security excellence, people-first leadership, and operational precision.'));
+      'Every organization should be so effective at security operations that both the likelihood and impact of a cyber attack is minimized to the point where risk is essentially zero.'));
 
     setTimeout(function () { input.focus(); }, 20);
 

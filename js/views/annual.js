@@ -28,7 +28,7 @@
     /* Header */
     root.appendChild(ui.el('div', { class: 'page-header' }, [
       ui.el('div', null, [
-        ui.el('h1', { class: 'page-title' }, state.year + ' — annual overview'),
+        ui.el('h1', { class: 'page-title' }, state.year + ' — Annual Overview'),
         ui.el('div', { class: 'page-sub' }, 'Full calendar year')
       ]),
       ui.el('div', { class: 'btn-row' }, [

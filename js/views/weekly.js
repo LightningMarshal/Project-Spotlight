@@ -24,7 +24,7 @@
 
     root.appendChild(ui.el('div', { class: 'page-header' }, [
       ui.el('div', null, [
-        ui.el('h1', { class: 'page-title' }, 'Weekly review'),
+        ui.el('h1', { class: 'page-title' }, 'Weekly Review'),
         ui.el('div', { class: 'page-sub' }, ui.longDate(weekStart) + '  →  ' + ui.longDate(weekEnd))
       ]),
       ui.el('div', { class: 'btn-row' }, [

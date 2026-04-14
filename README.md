@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.10.0**
+**v2.10.1**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -193,6 +193,9 @@ serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
 
 ## Changelog
+
+### v2.10.1
+- Minor capitalization errors fixed. Wording adjusted on several pages.
 
 ### v2.10.0
 - Entry form now supports free-text labels when "Other" is selected:

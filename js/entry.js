@@ -79,7 +79,7 @@
     });
 
     var descArea = ui.el('textarea', {
-      placeholder: 'Freeform context — what happened, why it matters, outcomes, people involved…',
+      placeholder: 'What happened, why it matters, outcomes, people involved…',
       oninput: function (e) { working.description = e.target.value; }
     }, working.description || '');
 
