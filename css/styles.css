@@ -1,10 +1,31 @@
-/* Uptrack — Arctic Wolf brand identity
- * Deep navy/near-black + sharp white + amber-orange sole accent.
- * Dark mode default; light mode via [data-theme="light"] on <html>.
+/* Uptrack — theme system
+ *
+ * Three theme packs:
+ *   - arctic     (default, enhanced Arctic Wolf identity — amber on deep navy)
+ *   - futuristic (cyan/magenta neon on near-black with grid)
+ *   - minimal    (restrained, clean typography, hairline borders)
+ *
+ * Three modes per pack:
+ *   - dark    (explicit dark)
+ *   - light   (explicit light)
+ *   - system  (follows prefers-color-scheme via media query)
+ *
+ * Attributes on <html>:
+ *   data-theme-pack="arctic|futuristic|minimal"
+ *   data-theme-mode="dark|light|system"
+ *
+ * Backwards compat: legacy [data-theme="light"] still works because boot()
+ * migrates the old setting forward.
  */
 
-/* ========== Dark theme (default) ========== */
-:root {
+/* ==========================================================================
+ * THEME PACK: ARCTIC WOLF (default) — enhanced amber identity
+ * ========================================================================== */
+
+/* Dark defaults (explicit + baseline) */
+:root,
+:root[data-theme-pack="arctic"],
+:root[data-theme-pack="arctic"][data-theme-mode="dark"] {
   --bg:            #0a0e14;
   --bg-alt:        #0e1219;
   --surface:       #131820;
@@ -18,18 +39,17 @@
   --accent:        #e8923e;
   --accent-dim:    #b87430;
   --accent-bg:     #2d1f0e;
+  --accent-glow:   rgba(232,146,62,0.35);
   --draft:         #e8923e;
   --draft-bg:      #2d1f0e;
   --complete:      #a0aab6;
   --complete-bg:   #1a1e24;
 
-  /* Impact — warm amber spectrum */
   --impact-low:      #7a8594;
   --impact-medium:   #d4a054;
   --impact-high:     #e8883a;
   --impact-critical: #d95535;
 
-  /* Taxonomies — unified amber family */
   --tax-values:     #d4a054;
   --tax-values-bg:  #231b0e;
   --tax-tenets:     #c48940;
@@ -46,10 +66,16 @@
 
   --backdrop: rgba(5,7,11,0.75);
   --shadow: rgba(0,0,0,0.5);
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 4px 14px rgba(0,0,0,0.25);
+  --shadow-elev: 0 2px 6px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.4);
+
+  --bg-gradient: radial-gradient(ellipse at top, #121826 0%, #0a0e14 60%);
+  --accent-gradient: linear-gradient(135deg, #e8923e 0%, #d47a1e 100%);
 }
 
-/* ========== Light theme ========== */
-[data-theme="light"] {
+/* Arctic light — explicit */
+:root[data-theme-pack="arctic"][data-theme-mode="light"],
+:root[data-theme="light"] {
   --bg:            #f4f5f7;
   --bg-alt:        #eaecf0;
   --surface:       #ffffff;
@@ -63,6 +89,7 @@
   --accent:        #d07a0e;
   --accent-dim:    #b06a0a;
   --accent-bg:     #fef3e0;
+  --accent-glow:   rgba(208,122,14,0.25);
   --draft:         #d07a0e;
   --draft-bg:      #fef3e0;
   --complete:      #4a5568;
@@ -82,6 +109,531 @@
 
   --backdrop: rgba(15,19,25,0.35);
   --shadow: rgba(0,0,0,0.12);
+  --shadow-card: 0 1px 2px rgba(15,19,25,0.08), 0 4px 14px rgba(15,19,25,0.06);
+  --shadow-elev: 0 2px 6px rgba(15,19,25,0.14), 0 12px 32px rgba(15,19,25,0.10);
+
+  --bg-gradient: radial-gradient(ellipse at top, #ffffff 0%, #eaecf0 100%);
+  --accent-gradient: linear-gradient(135deg, #e8923e 0%, #c96a0a 100%);
+}
+
+/* Arctic system — follow prefers-color-scheme when mode is "system" */
+@media (prefers-color-scheme: light) {
+  :root[data-theme-pack="arctic"][data-theme-mode="system"] {
+    --bg:            #f4f5f7;
+    --bg-alt:        #eaecf0;
+    --surface:       #ffffff;
+    --surface-2:     #f0f1f4;
+    --surface-3:     #e4e6ec;
+    --border:        #d0d4dc;
+    --border-strong: #b8bec8;
+    --text:          #0f1319;
+    --text-dim:      #4a5568;
+    --text-faint:    #7a8598;
+    --accent:        #d07a0e;
+    --accent-dim:    #b06a0a;
+    --accent-bg:     #fef3e0;
+    --accent-glow:   rgba(208,122,14,0.25);
+    --draft:         #d07a0e;
+    --draft-bg:      #fef3e0;
+    --complete:      #4a5568;
+    --complete-bg:   #edf0f4;
+    --impact-low:      #6b7a8c;
+    --impact-medium:   #b88a30;
+    --impact-high:     #d47a1e;
+    --impact-critical: #c44525;
+    --tax-values:     #b88a30;
+    --tax-values-bg:  #fdf0d8;
+    --tax-tenets:     #a87828;
+    --tax-tenets-bg:  #fceccc;
+    --tax-princ:      #986a20;
+    --tax-princ-bg:   #fae8c0;
+    --backdrop: rgba(15,19,25,0.35);
+    --shadow: rgba(0,0,0,0.12);
+    --shadow-card: 0 1px 2px rgba(15,19,25,0.08), 0 4px 14px rgba(15,19,25,0.06);
+    --shadow-elev: 0 2px 6px rgba(15,19,25,0.14), 0 12px 32px rgba(15,19,25,0.10);
+    --bg-gradient: radial-gradient(ellipse at top, #ffffff 0%, #eaecf0 100%);
+    --accent-gradient: linear-gradient(135deg, #e8923e 0%, #c96a0a 100%);
+  }
+}
+
+/* ==========================================================================
+ * THEME PACK: FUTURISTIC — cyan/magenta neon, grid background
+ * ========================================================================== */
+
+:root[data-theme-pack="futuristic"],
+:root[data-theme-pack="futuristic"][data-theme-mode="dark"] {
+  --bg:            #05060d;
+  --bg-alt:        #07091a;
+  --surface:       #0c1028;
+  --surface-2:     #121838;
+  --surface-3:     #1a2248;
+  --border:        #1e2a55;
+  --border-strong: #2f3f78;
+  --text:          #e8f6ff;
+  --text-dim:      #8fb4d6;
+  --text-faint:    #4a6a8c;
+  --accent:        #00e5ff;
+  --accent-dim:    #00a0bf;
+  --accent-bg:     #002030;
+  --accent-glow:   rgba(0,229,255,0.55);
+  --draft:         #ff4da6;
+  --draft-bg:      #2a0a1a;
+  --complete:      #8fb4d6;
+  --complete-bg:   #0a1028;
+
+  --impact-low:      #5a7a9c;
+  --impact-medium:   #ffd93d;
+  --impact-high:     #ff9f1c;
+  --impact-critical: #ff4d6d;
+
+  --tax-values:     #00e5ff;
+  --tax-values-bg:  #002030;
+  --tax-tenets:     #ff4da6;
+  --tax-tenets-bg:  #2a0a1a;
+  --tax-princ:      #a855ff;
+  --tax-princ-bg:   #180a2a;
+
+  --radius:    3px;
+  --radius-lg: 6px;
+
+  --font-head: "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Consolas, monospace;
+  --font: "Inter", "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --backdrop: rgba(2,3,8,0.85);
+  --shadow: rgba(0,229,255,0.15);
+  --shadow-card: 0 0 0 1px rgba(0,229,255,0.08), 0 2px 8px rgba(0,229,255,0.06);
+  --shadow-elev: 0 0 0 1px rgba(0,229,255,0.18), 0 8px 32px rgba(0,229,255,0.18), 0 0 64px rgba(255,77,166,0.08);
+
+  --bg-gradient:
+    linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px),
+    radial-gradient(ellipse at top, #0a1230 0%, #05060d 70%);
+  --bg-gradient-size: 40px 40px, 40px 40px, 100% 100%;
+  --accent-gradient: linear-gradient(135deg, #00e5ff 0%, #a855ff 50%, #ff4da6 100%);
+}
+
+:root[data-theme-pack="futuristic"][data-theme-mode="light"] {
+  --bg:            #eef5ff;
+  --bg-alt:        #dce8f8;
+  --surface:       #ffffff;
+  --surface-2:     #eaf2fc;
+  --surface-3:     #d6e4f5;
+  --border:        #b8cee8;
+  --border-strong: #7fa5d0;
+  --text:          #0a1430;
+  --text-dim:      #3a4f78;
+  --text-faint:    #6a85a8;
+  --accent:        #0070d4;
+  --accent-dim:    #0050a0;
+  --accent-bg:     #dceeff;
+  --accent-glow:   rgba(0,112,212,0.3);
+  --draft:         #c0007a;
+  --draft-bg:      #ffe0f0;
+  --complete:      #3a4f78;
+  --complete-bg:   #eaf2fc;
+
+  --impact-low:      #5a7a9c;
+  --impact-medium:   #c98800;
+  --impact-high:     #d05800;
+  --impact-critical: #c40030;
+
+  --tax-values:     #0070d4;
+  --tax-values-bg:  #dceeff;
+  --tax-tenets:     #c0007a;
+  --tax-tenets-bg:  #ffe0f0;
+  --tax-princ:      #6028c0;
+  --tax-princ-bg:   #ece0ff;
+
+  --backdrop: rgba(10,20,48,0.35);
+  --shadow: rgba(0,112,212,0.2);
+  --shadow-card: 0 0 0 1px rgba(0,112,212,0.1), 0 2px 8px rgba(0,112,212,0.08);
+  --shadow-elev: 0 0 0 1px rgba(0,112,212,0.18), 0 8px 32px rgba(0,112,212,0.18);
+
+  --bg-gradient:
+    linear-gradient(rgba(0,112,212,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,112,212,0.04) 1px, transparent 1px),
+    radial-gradient(ellipse at top, #ffffff 0%, #dce8f8 100%);
+  --bg-gradient-size: 40px 40px, 40px 40px, 100% 100%;
+  --accent-gradient: linear-gradient(135deg, #0070d4 0%, #6028c0 50%, #c0007a 100%);
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-theme-pack="futuristic"][data-theme-mode="system"] {
+    --bg:            #eef5ff;
+    --bg-alt:        #dce8f8;
+    --surface:       #ffffff;
+    --surface-2:     #eaf2fc;
+    --surface-3:     #d6e4f5;
+    --border:        #b8cee8;
+    --border-strong: #7fa5d0;
+    --text:          #0a1430;
+    --text-dim:      #3a4f78;
+    --text-faint:    #6a85a8;
+    --accent:        #0070d4;
+    --accent-dim:    #0050a0;
+    --accent-bg:     #dceeff;
+    --accent-glow:   rgba(0,112,212,0.3);
+    --draft:         #c0007a;
+    --draft-bg:      #ffe0f0;
+    --complete:      #3a4f78;
+    --complete-bg:   #eaf2fc;
+    --impact-low:      #5a7a9c;
+    --impact-medium:   #c98800;
+    --impact-high:     #d05800;
+    --impact-critical: #c40030;
+    --tax-values:     #0070d4;
+    --tax-values-bg:  #dceeff;
+    --tax-tenets:     #c0007a;
+    --tax-tenets-bg:  #ffe0f0;
+    --tax-princ:      #6028c0;
+    --tax-princ-bg:   #ece0ff;
+    --backdrop: rgba(10,20,48,0.35);
+    --shadow: rgba(0,112,212,0.2);
+    --shadow-card: 0 0 0 1px rgba(0,112,212,0.1), 0 2px 8px rgba(0,112,212,0.08);
+    --shadow-elev: 0 0 0 1px rgba(0,112,212,0.18), 0 8px 32px rgba(0,112,212,0.18);
+    --bg-gradient:
+      linear-gradient(rgba(0,112,212,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,112,212,0.04) 1px, transparent 1px),
+      radial-gradient(ellipse at top, #ffffff 0%, #dce8f8 100%);
+    --bg-gradient-size: 40px 40px, 40px 40px, 100% 100%;
+    --accent-gradient: linear-gradient(135deg, #0070d4 0%, #6028c0 50%, #c0007a 100%);
+  }
+}
+
+/* ==========================================================================
+ * THEME PACK: MINIMAL — restrained, clean, hairline
+ * ========================================================================== */
+
+:root[data-theme-pack="minimal"],
+:root[data-theme-pack="minimal"][data-theme-mode="dark"] {
+  --bg:            #0c0c0e;
+  --bg-alt:        #0c0c0e;
+  --surface:       #131316;
+  --surface-2:     #1a1a1e;
+  --surface-3:     #222228;
+  --border:        #26262c;
+  --border-strong: #36363e;
+  --text:          #f8f8fa;
+  --text-dim:      #9e9ea8;
+  --text-faint:    #5e5e68;
+  --accent:        #ffffff;
+  --accent-dim:    #d0d0d6;
+  --accent-bg:     #1c1c22;
+  --accent-glow:   rgba(255,255,255,0.12);
+  --draft:         #c0c0c8;
+  --draft-bg:      #18181c;
+  --complete:      #707078;
+  --complete-bg:   #16161a;
+
+  --impact-low:      #707078;
+  --impact-medium:   #a0a0a8;
+  --impact-high:     #d0d0d6;
+  --impact-critical: #ff5a5a;
+
+  --tax-values:     #c0c0c8;
+  --tax-values-bg:  #18181c;
+  --tax-tenets:     #a0a0a8;
+  --tax-tenets-bg:  #16161a;
+  --tax-princ:      #808088;
+  --tax-princ-bg:   #141418;
+
+  --radius:    2px;
+  --radius-lg: 3px;
+
+  --font-head: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --backdrop: rgba(0,0,0,0.75);
+  --shadow: rgba(0,0,0,0.3);
+  --shadow-card: none;
+  --shadow-elev: 0 8px 32px rgba(0,0,0,0.5);
+
+  --bg-gradient: none;
+  --accent-gradient: none;
+}
+
+:root[data-theme-pack="minimal"][data-theme-mode="light"] {
+  --bg:            #ffffff;
+  --bg-alt:        #ffffff;
+  --surface:       #ffffff;
+  --surface-2:     #fafafa;
+  --surface-3:     #f4f4f5;
+  --border:        #e5e5e8;
+  --border-strong: #d0d0d4;
+  --text:          #09090b;
+  --text-dim:      #52525b;
+  --text-faint:    #a0a0a8;
+  --accent:        #09090b;
+  --accent-dim:    #27272a;
+  --accent-bg:     #f4f4f5;
+  --accent-glow:   rgba(9,9,11,0.08);
+  --draft:         #52525b;
+  --draft-bg:      #f4f4f5;
+  --complete:      #a0a0a8;
+  --complete-bg:   #fafafa;
+
+  --impact-low:      #a0a0a8;
+  --impact-medium:   #52525b;
+  --impact-high:     #27272a;
+  --impact-critical: #dc2626;
+
+  --tax-values:     #52525b;
+  --tax-values-bg:  #f4f4f5;
+  --tax-tenets:     #71717a;
+  --tax-tenets-bg:  #fafafa;
+  --tax-princ:      #a0a0a8;
+  --tax-princ-bg:   #fafafa;
+
+  --backdrop: rgba(0,0,0,0.25);
+  --shadow: rgba(0,0,0,0.04);
+  --shadow-card: none;
+  --shadow-elev: 0 8px 32px rgba(0,0,0,0.08);
+
+  --bg-gradient: none;
+  --accent-gradient: none;
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-theme-pack="minimal"][data-theme-mode="system"] {
+    --bg:            #ffffff;
+    --bg-alt:        #ffffff;
+    --surface:       #ffffff;
+    --surface-2:     #fafafa;
+    --surface-3:     #f4f4f5;
+    --border:        #e5e5e8;
+    --border-strong: #d0d0d4;
+    --text:          #09090b;
+    --text-dim:      #52525b;
+    --text-faint:    #a0a0a8;
+    --accent:        #09090b;
+    --accent-dim:    #27272a;
+    --accent-bg:     #f4f4f5;
+    --accent-glow:   rgba(9,9,11,0.08);
+    --draft:         #52525b;
+    --draft-bg:      #f4f4f5;
+    --complete:      #a0a0a8;
+    --complete-bg:   #fafafa;
+    --impact-low:      #a0a0a8;
+    --impact-medium:   #52525b;
+    --impact-high:     #27272a;
+    --impact-critical: #dc2626;
+    --tax-values:     #52525b;
+    --tax-values-bg:  #f4f4f5;
+    --tax-tenets:     #71717a;
+    --tax-tenets-bg:  #fafafa;
+    --tax-princ:      #a0a0a8;
+    --tax-princ-bg:   #fafafa;
+    --backdrop: rgba(0,0,0,0.25);
+    --shadow: rgba(0,0,0,0.04);
+    --shadow-card: none;
+    --shadow-elev: 0 8px 32px rgba(0,0,0,0.08);
+    --bg-gradient: none;
+    --accent-gradient: none;
+  }
+}
+
+/* ==========================================================================
+ * Pack-specific visual enhancements
+ * ========================================================================== */
+
+/* Arctic — subtle glow on accent buttons, richer card shadows */
+:root[data-theme-pack="arctic"] body,
+:root:not([data-theme-pack]) body {
+  background: var(--bg-gradient, var(--bg));
+  background-attachment: fixed;
+}
+:root[data-theme-pack="arctic"] .btn.primary,
+:root:not([data-theme-pack]) .btn.primary {
+  background: var(--accent-gradient);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 0 var(--accent-glow), 0 2px 8px rgba(0,0,0,0.3);
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+:root[data-theme-pack="arctic"] .btn.primary:hover,
+:root:not([data-theme-pack]) .btn.primary:hover {
+  box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 16px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+:root[data-theme-pack="arctic"] .entry-card,
+:root:not([data-theme-pack]) .entry-card,
+:root[data-theme-pack="arctic"] .quick-capture,
+:root:not([data-theme-pack]) .quick-capture,
+:root[data-theme-pack="arctic"] .chart-card,
+:root:not([data-theme-pack]) .chart-card {
+  box-shadow: var(--shadow-card);
+}
+:root[data-theme-pack="arctic"] .brand-link,
+:root:not([data-theme-pack]) .brand-link {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--accent);
+}
+
+/* Futuristic — neon glow, grid background, glowing text */
+:root[data-theme-pack="futuristic"] body {
+  background: var(--bg-gradient);
+  background-size: var(--bg-gradient-size);
+  background-attachment: fixed;
+}
+:root[data-theme-pack="futuristic"] .topbar {
+  background: rgba(5,6,13,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--accent);
+  box-shadow: 0 0 20px rgba(0,229,255,0.15);
+}
+:root[data-theme-pack="futuristic"] .brand-link {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 16px var(--accent-glow);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+:root[data-theme-pack="futuristic"] .brand-tag {
+  color: var(--accent);
+  opacity: 0.7;
+}
+:root[data-theme-pack="futuristic"] .nav a.active {
+  color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 12px var(--accent-glow), inset 0 0 0 1px var(--accent);
+}
+:root[data-theme-pack="futuristic"] .page-title {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text);
+  text-shadow: 0 0 24px rgba(0,229,255,0.3);
+}
+:root[data-theme-pack="futuristic"] .btn {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+}
+:root[data-theme-pack="futuristic"] .btn:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 12px var(--accent-glow);
+  background: var(--accent-bg);
+}
+:root[data-theme-pack="futuristic"] .btn.primary {
+  background: var(--accent-gradient);
+  color: #05060d;
+  border: none;
+  box-shadow: 0 0 0 1px rgba(0,229,255,0.4), 0 0 20px var(--accent-glow);
+  font-weight: 700;
+}
+:root[data-theme-pack="futuristic"] .btn.primary:hover {
+  box-shadow: 0 0 0 1px rgba(0,229,255,0.6), 0 0 32px var(--accent-glow), 0 0 60px rgba(255,77,166,0.25);
+  transform: translateY(-1px);
+}
+:root[data-theme-pack="futuristic"] .entry-card,
+:root[data-theme-pack="futuristic"] .quick-capture,
+:root[data-theme-pack="futuristic"] .chart-card,
+:root[data-theme-pack="futuristic"] .form {
+  background: rgba(12,16,40,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-card);
+}
+:root[data-theme-pack="futuristic"] .entry-card:hover {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 20px var(--accent-glow);
+  transform: translateY(-1px);
+}
+:root[data-theme-pack="futuristic"] .section-title {
+  color: var(--accent);
+  opacity: 0.9;
+  border-bottom: 1px solid var(--accent);
+  border-image: linear-gradient(90deg, var(--accent), transparent) 1;
+}
+:root[data-theme-pack="futuristic"] .badge {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+:root[data-theme-pack="futuristic"] .stat-card .value {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Minimal — no shadows, hairline borders, generous whitespace */
+:root[data-theme-pack="minimal"] body {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+:root[data-theme-pack="minimal"] .topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 28px;
+}
+:root[data-theme-pack="minimal"] .brand-link {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+:root[data-theme-pack="minimal"] .brand-tag {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+:root[data-theme-pack="minimal"] .page-title {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-size: 24px;
+}
+:root[data-theme-pack="minimal"] .nav a {
+  font-weight: 400;
+  font-size: 13px;
+}
+:root[data-theme-pack="minimal"] .nav a.active {
+  background: transparent;
+  color: var(--text);
+  border-bottom: 1px solid var(--text);
+  border-radius: 0;
+}
+:root[data-theme-pack="minimal"] .view {
+  max-width: 920px;
+  padding: 48px 32px 96px;
+}
+:root[data-theme-pack="minimal"] .btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  font-weight: 400;
+}
+:root[data-theme-pack="minimal"] .btn:hover {
+  border-color: var(--text);
+  background: transparent;
+}
+:root[data-theme-pack="minimal"] .btn.primary {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+:root[data-theme-pack="minimal"] .btn.primary:hover {
+  background: var(--text-dim);
+  border-color: var(--text-dim);
+}
+:root[data-theme-pack="minimal"] .entry-card,
+:root[data-theme-pack="minimal"] .quick-capture,
+:root[data-theme-pack="minimal"] .chart-card,
+:root[data-theme-pack="minimal"] .form {
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+:root[data-theme-pack="minimal"] .entry-card:hover {
+  background: var(--surface-2);
+}
+:root[data-theme-pack="minimal"] .section-title {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  color: var(--text-dim);
 }
 
 /* ========== Reset & base ========== */

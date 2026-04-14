@@ -20,14 +20,15 @@
   async function render(root) {
     ui.clear(root);
 
-    const [allEntries, archivedEntries, lastBackupAt, roster, audioEnabled, confettiEnabled, theme, soundTheme] = await Promise.all([
+    const [allEntries, archivedEntries, lastBackupAt, roster, audioEnabled, confettiEnabled, themePack, themeMode, soundTheme] = await Promise.all([
       db.getAllEntries(),
       db.getAllEntries({ includeArchived: true }).then(function (a) { return a.filter(function (e) { return e.archived; }); }),
       db.getSetting('lastBackupAt'),
       db.getSetting('roster'),
       db.getSetting('audioEnabled'),
       db.getSetting('confettiEnabled'),
-      db.getSetting('theme'),
+      db.getSetting('themePack'),
+      db.getSetting('themeMode'),
       db.getSetting('soundTheme')
     ]);
 
@@ -45,7 +46,13 @@
     /* Appearance & reward toggles */
     root.appendChild(ui.el('h2', { class: 'section-title' }, 'Appearance & rewards'));
     root.appendChild(renderToggles(
-      { audio: audioEnabled, confetti: confettiEnabled, theme: theme || 'dark', soundTheme: soundTheme || 'chime' },
+      {
+        audio: audioEnabled,
+        confetti: confettiEnabled,
+        themePack: themePack || 'arctic',
+        themeMode: themeMode || 'dark',
+        soundTheme: soundTheme || 'chime'
+      },
       function () { render(root); }
     ));
 
@@ -130,12 +137,57 @@
       }
     }, 'Preview confetti');
 
+    /* Theme pack dropdown */
+    var THEME_PACKS = [
+      { key: 'arctic',     label: 'Arctic Wolf — amber on deep navy' },
+      { key: 'futuristic', label: 'Futuristic — cyan neon on near-black' },
+      { key: 'minimal',    label: 'Minimal — clean typography, restrained' }
+    ];
+    var packSelect = ui.el('select', {
+      style: { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' },
+      onchange: async function (e) {
+        await db.setSetting('themePack', e.target.value);
+        document.documentElement.setAttribute('data-theme-pack', e.target.value);
+      }
+    }, THEME_PACKS.map(function (p) {
+      return ui.el('option', { value: p.key, selected: state.themePack === p.key }, p.label);
+    }));
+
+    /* Theme mode dropdown */
+    var THEME_MODES = [
+      { key: 'dark',   label: 'Dark' },
+      { key: 'light',  label: 'Light' },
+      { key: 'system', label: 'Follow system' }
+    ];
+    var modeSelect = ui.el('select', {
+      style: { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' },
+      onchange: async function (e) {
+        await db.setSetting('themeMode', e.target.value);
+        document.documentElement.setAttribute('data-theme-mode', e.target.value);
+      }
+    }, THEME_MODES.map(function (m) {
+      return ui.el('option', { value: m.key, selected: state.themeMode === m.key }, m.label);
+    }));
+
+    var themePackRow = ui.el('div', { class: 'toggle-row' }, [
+      ui.el('div', null, [
+        ui.el('div', { class: 'toggle-label' }, 'Theme pack'),
+        ui.el('div', { class: 'toggle-desc' }, 'Visual identity — takes effect immediately')
+      ]),
+      packSelect
+    ]);
+
+    var themeModeRow = ui.el('div', { class: 'toggle-row' }, [
+      ui.el('div', null, [
+        ui.el('div', { class: 'toggle-label' }, 'Mode'),
+        ui.el('div', { class: 'toggle-desc' }, 'Light / dark, or follow the OS preference')
+      ]),
+      modeSelect
+    ]);
+
     var container = ui.el('div', { class: 'form' }, [
-      toggle('Dark mode', 'Switch between dark and light theme', state.theme === 'dark', async function (on) {
-        var t = on ? 'dark' : 'light';
-        await db.setSetting('theme', t);
-        document.documentElement.setAttribute('data-theme', t);
-      }),
+      themePackRow,
+      themeModeRow,
       toggle('Audio chime', 'Play a chime when saving an entry as complete', state.audio !== false, async function (on) {
         await db.setSetting('audioEnabled', on);
       }),

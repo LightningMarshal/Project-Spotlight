@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.8.0**
+**v2.9.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -193,6 +193,24 @@ serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
 
 ## Changelog
+
+### v2.9.0
+- Three togglable visual theme packs, each with full dark/light/system
+  modes:
+  - **Arctic Wolf** (default) — enhanced amber-on-navy with gradient
+    brand text, radial background, glow-on-press primary buttons,
+    layered card shadows
+  - **Futuristic** — cyan/magenta neon on near-black with grid
+    backdrop, glowing borders, glassy surfaces, backdrop blur on
+    topbar, JetBrains Mono headings
+  - **Minimal** — restrained typography with hairline borders, no
+    shadows, wider whitespace, generous content width reduction,
+    underline-only active nav
+- System-preference light/dark mode: new "Follow system" option uses
+  `prefers-color-scheme` media query per theme pack
+- Settings: theme pack dropdown + mode dropdown replace the old dark
+  mode toggle
+- Legacy `theme` setting automatically migrates to new `themeMode`
 
 ### v2.8.0
 - Confetti upgrade: multicolor cannon burst with 180 particles, varied

@@ -76,10 +76,25 @@
       return;
     }
 
-    /* Restore saved theme preference (default: dark) */
+    /* Restore saved theme pack and mode.
+     * Defaults: pack=arctic, mode=dark. Migration: if the legacy 'theme'
+     * setting exists ('dark'|'light'), translate it to the new mode and
+     * delete the old key so subsequent reads use the new scheme. */
     try {
-      var theme = await window.Uptrack.db.getSetting('theme');
-      if (theme) document.documentElement.setAttribute('data-theme', theme);
+      var db = window.Uptrack.db;
+      var pack = await db.getSetting('themePack');
+      var mode = await db.getSetting('themeMode');
+      var legacyTheme = await db.getSetting('theme');
+
+      if (!mode && legacyTheme) {
+        mode = legacyTheme; // 'dark' or 'light'
+        await db.setSetting('themeMode', mode);
+      }
+      if (!pack) pack = 'arctic';
+      if (!mode) mode = 'dark';
+
+      document.documentElement.setAttribute('data-theme-pack', pack);
+      document.documentElement.setAttribute('data-theme-mode', mode);
     } catch (e) { /* non-fatal */ }
 
     window.addEventListener('hashchange', router);
