@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.10.1**
+**v2.11.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -193,6 +193,18 @@ serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
 
 ## Changelog
+
+### v2.11.0
+- Interaction Type lists are now domain-specific:
+  - **People Management**: One-on-One, Skip Level, Performance
+    Coaching, Project Meeting, Other
+  - **Client Facing**: Escalation, Prospective Customer, Customer
+    Event, Day in the Life / SOC Tour, Networking, Executive Briefing,
+    Speaking or Presentation, Quarterly Business Review, Other
+- "Feedback" removed from both domains entirely
+- Historical entries retain their stored interaction type value — only
+  the dropdown vocabulary for new/edited entries is affected
+- Fix: Follow-Ups page title now reads "Follow-Up Action Items"
 
 ### v2.10.1
 - Minor capitalization errors fixed. Wording adjusted on several pages.

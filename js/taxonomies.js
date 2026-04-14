@@ -48,8 +48,28 @@
     Critical: 'impact-critical'
   };
 
-  /* Domain-specific field enums */
-  const INTERACTION_TYPES = ['One-on-One', 'Team Meeting', 'Skip-Level', 'Coaching', 'Feedback', 'Ad Hoc', 'Email', 'Chat', 'Other'];
+  /* Domain-specific field enums.
+   * Interaction types are split per-domain: People Management uses a
+   * management-oriented set, Client Facing uses a customer/engagement-
+   * oriented set. "Other" in either list reveals a free-text input. */
+  const INTERACTION_TYPES_PEOPLE = [
+    'One-on-One',
+    'Skip Level',
+    'Performance Coaching',
+    'Project Meeting',
+    'Other'
+  ];
+  const INTERACTION_TYPES_CLIENT = [
+    'Escalation',
+    'Prospective Customer',
+    'Customer Event',
+    'Day in the Life / SOC Tour',
+    'Networking',
+    'Executive Briefing',
+    'Speaking or Presentation',
+    'Quarterly Business Review',
+    'Other'
+  ];
   const MEETING_DIRECTIONS = ['I Called', 'They Called', 'Scheduled', 'Walk-In'];
   const SENTIMENTS = ['Very Positive', 'Positive', 'Neutral', 'Negative', 'Very Negative'];
   const DEVELOPMENT_THEMES = ['Career Growth', 'Skill Building', 'Performance', 'Engagement', 'Onboarding', 'Transition', 'Retention', 'Other'];
@@ -115,7 +135,8 @@
     IMPACT_LEVELS,
     IMPACT_RANK,
     IMPACT_CLASS,
-    INTERACTION_TYPES,
+    INTERACTION_TYPES_PEOPLE,
+    INTERACTION_TYPES_CLIENT,
     MEETING_DIRECTIONS,
     SENTIMENTS,
     DEVELOPMENT_THEMES,

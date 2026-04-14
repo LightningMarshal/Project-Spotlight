@@ -240,7 +240,7 @@
           ui.el('div', null, [
             ui.el('label', null, 'Interaction Type'),
             makeSelectWithOther(
-              tax.INTERACTION_TYPES,
+              tax.INTERACTION_TYPES_PEOPLE,
               working.interactionType,
               working.interactionTypeOther,
               'Select type…',
@@ -300,7 +300,7 @@
           ui.el('div', null, [
             ui.el('label', null, 'Interaction Type'),
             makeSelectWithOther(
-              tax.INTERACTION_TYPES,
+              tax.INTERACTION_TYPES_CLIENT,
               working.interactionType,
               working.interactionTypeOther,
               'Select type…',

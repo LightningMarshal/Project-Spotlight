@@ -17,7 +17,7 @@
 
     root.appendChild(ui.el('div', { class: 'page-header' }, [
       ui.el('div', null, [
-        ui.el('h1', { class: 'page-title' }, 'Follow-Up Actions Items'),
+        ui.el('h1', { class: 'page-title' }, 'Follow-Up Action Items'),
         ui.el('div', { class: 'page-sub' }, 'Open action items sorted by target date')
       ])
     ]));
