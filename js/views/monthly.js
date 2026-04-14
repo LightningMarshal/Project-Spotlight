@@ -178,10 +178,14 @@
       oninput: function (e) {
         if (state.reflectionTimer) clearTimeout(state.reflectionTimer);
         state.reflectionTimer = setTimeout(async function () {
-          var log = (await db.getPeopleLog(monthK)) || tax.emptyPeopleLog(monthK);
-          log.reflection = e.target.value;
-          log.month = monthK;
-          await db.savePeopleLog(log);
+          try {
+            var log = (await db.getPeopleLog(monthK)) || tax.emptyPeopleLog(monthK);
+            log.reflection = e.target.value;
+            log.month = monthK;
+            await db.savePeopleLog(log);
+          } catch (err) {
+            ui.toast('Storage error — reflection not saved: ' + (err && err.message || 'unknown'), 'error');
+          }
         }, 700);
       }
     }, reflection);

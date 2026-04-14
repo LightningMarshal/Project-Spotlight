@@ -41,9 +41,14 @@
   async function quickCreate(title) {
     if (!title || !title.trim()) return null;
     var e = Object.assign(newEntryTemplate(), { title: title.trim(), status: 'draft' });
-    var saved = await db.addEntry(e);
-    ui.toast('Draft saved: "' + saved.title + '"');
-    return saved;
+    try {
+      var saved = await db.addEntry(e);
+      ui.toast('Draft saved: "' + saved.title + '"');
+      return saved;
+    } catch (err) {
+      ui.toast('Storage error — draft not saved: ' + (err && err.message || 'unknown'), 'error');
+      return null;
+    }
   }
 
   function open(entryOrId, opts) {
@@ -393,9 +398,13 @@
             class: 'btn danger small',
             onclick: function () {
               ui.confirmDialog('Delete this entry? This cannot be undone.', async function () {
-                await db.deleteEntry(working.id);
-                ui.toast('Entry deleted', 'warn');
-                if (opts.onChange) opts.onChange();
+                try {
+                  await db.deleteEntry(working.id);
+                  ui.toast('Entry deleted', 'warn');
+                  if (opts.onChange) opts.onChange();
+                } catch (err) {
+                  ui.toast('Storage error — could not delete: ' + (err && err.message || 'unknown'), 'error');
+                }
               });
             }
           }, 'Delete') : null
@@ -410,11 +419,15 @@
             onclick: async function () {
               if (!working.title.trim()) { ui.toast('Title is required', 'warn'); return; }
               working.status = 'draft';
-              var saved = await db.saveEntry(working);
-              working.id = saved.id;
-              ui.toast('Draft saved');
-              if (opts.onChange) opts.onChange(saved);
-              ui.closeModal();
+              try {
+                var saved = await db.saveEntry(working);
+                working.id = saved.id;
+                ui.toast('Draft saved');
+                if (opts.onChange) opts.onChange(saved);
+                ui.closeModal();
+              } catch (err) {
+                ui.toast('Storage error — draft not saved: ' + (err && err.message || 'unknown'), 'error');
+              }
             }
           }, 'Save draft'),
           ui.el('button', {
@@ -424,12 +437,16 @@
               if (!working.domain) { ui.toast('Choose a domain before completing', 'warn'); return; }
               if (!working.impact) { ui.toast('Choose an impact level before completing', 'warn'); return; }
               working.status = 'complete';
-              var saved = await db.saveEntry(working);
-              working.id = saved.id;
-              ui.toast('Entry saved as complete');
-              if (window.Uptrack.rewards) window.Uptrack.rewards.fire();
-              if (opts.onChange) opts.onChange(saved);
-              ui.closeModal();
+              try {
+                var saved = await db.saveEntry(working);
+                working.id = saved.id;
+                ui.toast('Entry saved as complete');
+                if (window.Uptrack.rewards) window.Uptrack.rewards.fire();
+                if (opts.onChange) opts.onChange(saved);
+                ui.closeModal();
+              } catch (err) {
+                ui.toast('Storage error — entry not saved: ' + (err && err.message || 'unknown'), 'error');
+              }
             }
           }, 'Save as complete')
         ])

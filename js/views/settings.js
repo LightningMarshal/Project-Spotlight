@@ -352,12 +352,16 @@
         note,
         ui.el('div', { class: 'btn-row' }, [
           ui.el('button', { class: 'btn primary', onclick: async function () {
-            await window.Uptrack.export.runFullBackup();
-            var now = new Date();
-            await db.setSetting('lastBackupAt', now.toISOString());
-            note.textContent = 'Backup generated ' + now.toLocaleString();
-            ui.toast('Backup downloaded');
-            onChange();
+            try {
+              await window.Uptrack.export.runFullBackup();
+              var now = new Date();
+              await db.setSetting('lastBackupAt', now.toISOString());
+              note.textContent = 'Backup generated ' + now.toLocaleString();
+              ui.toast('Backup downloaded');
+              onChange();
+            } catch (err) {
+              ui.toast('Backup failed: ' + (err && err.message || 'unknown'), 'error');
+            }
           } }, 'Download full backup'),
           ui.el('button', { class: 'btn', onclick: function () { restoreInput.click(); } }, 'Restore from backup'),
           restoreInput
@@ -455,9 +459,13 @@
           window.Uptrack.entry.open(e.id, { onChange: onChange });
         } }, 'Edit'),
         ui.el('button', { class: 'btn small', onclick: async function () {
-          await db.archiveEntry(e.id, !isArchived);
-          ui.toast(isArchived ? 'Entry restored' : 'Entry archived');
-          onChange();
+          try {
+            await db.archiveEntry(e.id, !isArchived);
+            ui.toast(isArchived ? 'Entry restored' : 'Entry archived');
+            onChange();
+          } catch (err) {
+            ui.toast('Storage error — could not update: ' + (err && err.message || 'unknown'), 'error');
+          }
         } }, isArchived ? 'Restore' : 'Archive')
       ])
     ]);

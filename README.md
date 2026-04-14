@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.11.0**
+**v2.12.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -176,7 +176,9 @@ Each entry belongs to one of four domains, with domain-specific fields:
 - **Obsidian** — markdown with YAML frontmatter, structured headings, and
   hash tags (`#domain/*`, `#impact/*`, `#value/*`, `#tenet/*`, `#principle/*`)
 - **Performance review** — grouped by company value → culture tenet
-- **Full backup** — single JSON containing every entry, log, and note
+- **Full backup** — single JSON containing every entry, people log,
+  taxonomy note, and setting (roster, theme, reward toggles,
+  `lastBackupAt`). See [Data storage](#data-storage) for details.
 
 ## Project layout
 
@@ -192,7 +194,57 @@ js/views/followups.js  js/views/settings.js
 serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
 
+## Data storage
+
+Uptrack stores 100% of its state in the browser's IndexedDB under the
+database name `uptrack`. There is no `localStorage`, no cookies, no
+`sessionStorage`, no network persistence, and no background sync. Four
+object stores cover every piece of application state:
+
+| Store           | keyPath                | Contents                                                                                                      |
+| --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `entries`       | `id` (autoincrement)   | Daily impact entries — title, description, domain, impact, tags, and all per-domain fields (People Management, Client Facing, Project). Indexed by `date`, `status`, `domain`, `archived`. |
+| `peopleLogs`    | `month` (`'YYYY-MM'`)  | Monthly people-management reflection text, keyed by calendar month.                                           |
+| `taxonomyNotes` | `key` (`'tax:item'`)   | Free-text notes attached to individual values, tenets, or principles in the taxonomy.                         |
+| `settings`      | `key`                  | Roster (direct / indirect / leadership), theme pack, theme mode, sound theme, audio-chime toggle, confetti toggle, and `lastBackupAt`. |
+
+The full backup covers **every** object store. Backup format version 2
+(v2.12.0 and later) includes the `settings` store so roster and
+preferences survive a machine migration. Version 1 backups (pre-v2.12.0)
+still restore cleanly — they simply leave existing settings untouched
+rather than clobbering them, so upgrading is non-destructive in both
+directions.
+
+Storage write failures (quota exceeded, partitioned origin cleared, tab
+closed mid-save) surface as user-facing error toasts rather than
+disappearing silently. Affected paths include entry save/delete,
+follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
+and the backup download itself.
+
 ## Changelog
+
+### v2.12.0
+- **Full backup now covers every object store.** `db.exportAll()`
+  previously omitted the `settings` store, which meant restoring on a
+  new machine would silently lose the roster (breaking the Individual
+  dropdown in People Management entries), theme pack / mode, sound
+  theme, and reward toggles. Backups generated from v2.12.0 onward
+  include a `settings` key and restore cleanly onto a fresh machine.
+- **Backup format version bumped `1 → 2`.** v1 backups (pre-v2.12.0)
+  still restore correctly — they leave existing settings untouched
+  rather than clobbering them — so the format change is
+  backwards-compatible in both directions.
+- **Storage write errors now surface as error toasts** instead of
+  failing silently. Affected paths: entry quick-create, save-draft,
+  save-as-complete, delete; follow-up dismiss and reopen; monthly
+  reflection auto-save; archive toggle; download full backup.
+- **New `## Data storage` section** in this README enumerates the
+  four IndexedDB object stores, their keyPaths, and which settings
+  live where.
+- **Note on the "localStorage → IndexedDB migration" addendum item:**
+  investigated and found to be a non-issue. Uptrack has used
+  IndexedDB for 100% of its state since v1.0.0; there has never been
+  a `localStorage` code path to migrate.
 
 ### v2.11.0
 - Interaction Type lists are now domain-specific:

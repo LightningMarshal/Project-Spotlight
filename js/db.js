@@ -229,6 +229,19 @@
     await wrap(t.objectStore('settings').put({ key: key, value: value }));
   }
 
+  /* Dump every settings row as { key: value, ... }. Used by backup
+   * export so roster, theme prefs, reward toggles, and lastBackupAt
+   * are all carried across machines. */
+  async function getAllSettings() {
+    const t = await tx(['settings']);
+    const all = (await wrap(t.objectStore('settings').getAll())) || [];
+    const out = {};
+    for (const rec of all) {
+      if (rec && rec.key && rec.key !== '__probe__') out[rec.key] = rec.value;
+    }
+    return out;
+  }
+
   /* ---------- persistence probe ----------
    * Round-trips a probe record to verify IndexedDB reads and writes actually
    * persist — used at boot time to catch file:// storage quirks (particularly
@@ -251,27 +264,43 @@
 
   /* ---------- backup / restore ---------- */
 
+  /* Backup format versions:
+   *   1 — entries, peopleLogs, taxonomyNotes only (legacy)
+   *   2 — adds settings (roster, theme prefs, reward toggles,
+   *       lastBackupAt) so every object store is covered
+   */
+  const BACKUP_VERSION = 2;
+
   async function exportAll() {
-    const [entries, logs, notes] = await Promise.all([
+    const [entries, logs, notes, settings] = await Promise.all([
       getAllEntries({ includeArchived: true }),
       getAllPeopleLogs(),
-      getAllTaxonomyNotes()
+      getAllTaxonomyNotes(),
+      getAllSettings()
     ]);
     return {
       application: 'Uptrack',
-      version: 1,
+      version: BACKUP_VERSION,
       generatedAt: new Date().toISOString(),
       entries: entries,
       peopleLogs: logs,
-      taxonomyNotes: notes
+      taxonomyNotes: notes,
+      settings: settings
     };
   }
 
+  /* Replaces every object store with the contents of the backup.
+   * Handles v1 (no settings key) and v2+ (settings present) payloads.
+   * A v1 restore leaves existing settings intact — it does not clobber
+   * them, since the backup pre-dates the settings-inclusive format. */
   async function restoreAll(payload) {
     if (!payload || payload.application !== 'Uptrack') {
       throw new Error('Unrecognized backup file.');
     }
-    const t = await tx(['entries', 'peopleLogs', 'taxonomyNotes'], 'readwrite');
+    const hasSettings = payload.settings && typeof payload.settings === 'object';
+    const storeList = ['entries', 'peopleLogs', 'taxonomyNotes'];
+    if (hasSettings) storeList.push('settings');
+    const t = await tx(storeList, 'readwrite');
     const es = t.objectStore('entries');
     const ls = t.objectStore('peopleLogs');
     const ns = t.objectStore('taxonomyNotes');
@@ -287,6 +316,14 @@
     for (const k of Object.keys(payload.taxonomyNotes || {})) {
       await wrap(ns.put({ key: k, note: payload.taxonomyNotes[k] }));
     }
+    if (hasSettings) {
+      const ss = t.objectStore('settings');
+      await wrap(ss.clear());
+      for (const k of Object.keys(payload.settings)) {
+        if (k === '__probe__') continue;
+        await wrap(ss.put({ key: k, value: payload.settings[k] }));
+      }
+    }
   }
 
   window.Uptrack = window.Uptrack || {};
@@ -296,7 +333,7 @@
     getAllEntries, getDrafts, archiveEntry,
     savePeopleLog, getPeopleLog, getAllPeopleLogs, deletePeopleLog,
     setTaxonomyNote, getAllTaxonomyNotes,
-    getSetting, setSetting, probePersistence,
+    getSetting, setSetting, getAllSettings, probePersistence,
     exportAll, restoreAll
   };
 })();

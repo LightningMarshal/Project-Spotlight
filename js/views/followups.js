@@ -134,18 +134,26 @@
                   class: 'btn small',
                   onclick: async function () {
                     e.followUpDismissed = false;
-                    await db.updateEntry(e);
-                    ui.toast('Action reopened');
-                    render(root);
+                    try {
+                      await db.updateEntry(e);
+                      ui.toast('Action reopened');
+                      render(root);
+                    } catch (err) {
+                      ui.toast('Storage error — could not reopen: ' + (err && err.message || 'unknown'), 'error');
+                    }
                   }
                 }, 'Reopen')
               : ui.el('button', {
                   class: 'btn small',
                   onclick: async function () {
                     e.followUpDismissed = true;
-                    await db.updateEntry(e);
-                    ui.toast('Action dismissed');
-                    render(root);
+                    try {
+                      await db.updateEntry(e);
+                      ui.toast('Action dismissed');
+                      render(root);
+                    } catch (err) {
+                      ui.toast('Storage error — could not dismiss: ' + (err && err.message || 'unknown'), 'error');
+                    }
                   }
                 }, 'Dismiss'),
             ui.el('button', {
