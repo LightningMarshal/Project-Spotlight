@@ -7,36 +7,112 @@
 
   const db = window.Uptrack.db;
 
-  /* ---------- Audio chime ----------
-   * Synthesised using the Web Audio API — no external files needed.
-   * Plays a pleasant two-tone ascending chime.
+  /* ---------- Audio sound library ----------
+   * All sounds are synthesised via the Web Audio API — no external files,
+   * no copyright concerns, no CSP impact. Each theme is a function that
+   * accepts an AudioContext and a start time, and schedules its oscillators.
    */
-  function playChime() {
+
+  function makeContext() {
+    return new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  /* Schedule a single sine tone with attack + exponential decay. */
+  function tone(ctx, freq, start, dur, gain, type) {
+    var osc = ctx.createOscillator();
+    var vol = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    vol.gain.setValueAtTime(0.0001, start);
+    vol.gain.exponentialRampToValueAtTime(gain, start + 0.008);
+    vol.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+    osc.connect(vol);
+    vol.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + dur + 0.05);
+  }
+
+  /* Bell-like tone: fundamental + inharmonic partials at bell ratios.
+   * The 2.4x and 4.2x partials give that distinctive metallic "ping". */
+  function bell(ctx, freq, start, dur, gain) {
+    tone(ctx, freq,        start, dur,       gain);
+    tone(ctx, freq * 2,    start, dur * 0.7, gain * 0.5);
+    tone(ctx, freq * 2.4,  start, dur * 0.5, gain * 0.35); // inharmonic
+    tone(ctx, freq * 4.2,  start, dur * 0.3, gain * 0.18); // shimmer
+  }
+
+  /* THEME: Ascending chime — the original default. */
+  function theme_chime(ctx, t) {
+    tone(ctx, 659,  t,        0.25, 0.15);  // E5
+    tone(ctx, 880,  t + 0.12, 0.30, 0.12);  // A5
+    tone(ctx, 1047, t + 0.25, 0.40, 0.08);  // C6
+  }
+
+  /* THEME: Bright Bell — cheerful single bell ping, in the family of
+   * notification tones. Inspired by generic retail "payment success"
+   * chimes; not a reproduction of any specific copyrighted sound. */
+  function theme_bell(ctx, t) {
+    bell(ctx, 1318, t,        0.7, 0.18); // E6 ping
+    bell(ctx, 1760, t + 0.05, 0.9, 0.12); // A6 overlay
+  }
+
+  /* THEME: Fanfare — triumphant ascending triad on a brass-like waveform. */
+  function theme_fanfare(ctx, t) {
+    tone(ctx, 523,  t,        0.15, 0.14, 'triangle'); // C5
+    tone(ctx, 659,  t + 0.10, 0.15, 0.14, 'triangle'); // E5
+    tone(ctx, 784,  t + 0.20, 0.15, 0.14, 'triangle'); // G5
+    tone(ctx, 1047, t + 0.30, 0.60, 0.18, 'triangle'); // C6 (sustained)
+    tone(ctx, 1319, t + 0.30, 0.60, 0.12, 'triangle'); // E6 (harmony)
+  }
+
+  /* THEME: Soft Ding — single gentle bell, quick and quiet. */
+  function theme_ding(ctx, t) {
+    bell(ctx, 1047, t, 0.6, 0.14); // C6
+  }
+
+  /* THEME: Level Up — video-game-style rising pentatonic arpeggio. */
+  function theme_levelup(ctx, t) {
+    tone(ctx, 523,  t,        0.08, 0.12, 'square'); // C5
+    tone(ctx, 659,  t + 0.08, 0.08, 0.12, 'square'); // E5
+    tone(ctx, 784,  t + 0.16, 0.08, 0.12, 'square'); // G5
+    tone(ctx, 880,  t + 0.24, 0.08, 0.12, 'square'); // A5
+    tone(ctx, 1047, t + 0.32, 0.35, 0.14, 'square'); // C6
+  }
+
+  /* THEME: Success Chord — major triad struck simultaneously with bell
+   * partials, medium decay. */
+  function theme_success(ctx, t) {
+    bell(ctx, 659,  t, 0.8, 0.12); // E5
+    bell(ctx, 831,  t, 0.8, 0.12); // G#5
+    bell(ctx, 988,  t, 0.8, 0.12); // B5
+  }
+
+  var SOUND_THEMES = {
+    chime:   { label: 'Ascending Chime',  play: theme_chime },
+    bell:    { label: 'Bright Bell',      play: theme_bell },
+    fanfare: { label: 'Fanfare',          play: theme_fanfare },
+    ding:    { label: 'Soft Ding',        play: theme_ding },
+    levelup: { label: 'Level Up',         play: theme_levelup },
+    success: { label: 'Success Chord',    play: theme_success }
+  };
+
+  var DEFAULT_THEME = 'chime';
+
+  function playTheme(themeKey) {
     try {
-      var ctx = new (window.AudioContext || window.webkitAudioContext)();
-      var now = ctx.currentTime;
-
-      function tone(freq, start, dur, gain) {
-        var osc = ctx.createOscillator();
-        var vol = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        vol.gain.setValueAtTime(gain, start);
-        vol.gain.exponentialRampToValueAtTime(0.001, start + dur);
-        osc.connect(vol);
-        vol.connect(ctx.destination);
-        osc.start(start);
-        osc.stop(start + dur);
-      }
-
-      tone(659, now, 0.25, 0.15);       // E5
-      tone(880, now + 0.12, 0.3, 0.12); // A5
-      tone(1047, now + 0.25, 0.4, 0.08); // C6
-
-      setTimeout(function () { ctx.close(); }, 1200);
+      var theme = SOUND_THEMES[themeKey] || SOUND_THEMES[DEFAULT_THEME];
+      var ctx = makeContext();
+      theme.play(ctx, ctx.currentTime);
+      setTimeout(function () { ctx.close(); }, 2000);
     } catch (e) {
       // AudioContext not available — silently skip
     }
+  }
+
+  /* Back-compat: original playChime() now plays the currently-selected theme. */
+  async function playChime() {
+    var themeKey = await db.getSetting('soundTheme');
+    playTheme(themeKey || DEFAULT_THEME);
   }
 
   /* ---------- Confetti burst ----------
@@ -177,12 +253,20 @@
   async function fire() {
     var audioEnabled = await db.getSetting('audioEnabled');
     var confettiEnabled = await db.getSetting('confettiEnabled');
+    var themeKey = await db.getSetting('soundTheme');
 
     // Default to enabled if never set
-    if (audioEnabled !== false) playChime();
+    if (audioEnabled !== false) playTheme(themeKey || DEFAULT_THEME);
     if (confettiEnabled !== false) burstConfetti();
   }
 
   window.Uptrack = window.Uptrack || {};
-  window.Uptrack.rewards = { fire: fire, playChime: playChime, burstConfetti: burstConfetti };
+  window.Uptrack.rewards = {
+    fire: fire,
+    playChime: playChime,
+    playTheme: playTheme,
+    burstConfetti: burstConfetti,
+    SOUND_THEMES: SOUND_THEMES,
+    DEFAULT_THEME: DEFAULT_THEME
+  };
 })();

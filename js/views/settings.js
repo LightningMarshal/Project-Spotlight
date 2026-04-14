@@ -20,14 +20,15 @@
   async function render(root) {
     ui.clear(root);
 
-    const [allEntries, archivedEntries, lastBackupAt, roster, audioEnabled, confettiEnabled, theme] = await Promise.all([
+    const [allEntries, archivedEntries, lastBackupAt, roster, audioEnabled, confettiEnabled, theme, soundTheme] = await Promise.all([
       db.getAllEntries(),
       db.getAllEntries({ includeArchived: true }).then(function (a) { return a.filter(function (e) { return e.archived; }); }),
       db.getSetting('lastBackupAt'),
       db.getSetting('roster'),
       db.getSetting('audioEnabled'),
       db.getSetting('confettiEnabled'),
-      db.getSetting('theme')
+      db.getSetting('theme'),
+      db.getSetting('soundTheme')
     ]);
 
     root.appendChild(ui.el('div', { class: 'page-header' }, [
@@ -44,7 +45,7 @@
     /* Appearance & reward toggles */
     root.appendChild(ui.el('h2', { class: 'section-title' }, 'Appearance & rewards'));
     root.appendChild(renderToggles(
-      { audio: audioEnabled, confetti: confettiEnabled, theme: theme || 'dark' },
+      { audio: audioEnabled, confetti: confettiEnabled, theme: theme || 'dark', soundTheme: soundTheme || 'chime' },
       function () { render(root); }
     ));
 
@@ -88,6 +89,47 @@
       ]);
     }
 
+    /* Sound theme selector + preview button */
+    var rewards = window.Uptrack.rewards || {};
+    var themes = rewards.SOUND_THEMES || {};
+    var themeKeys = Object.keys(themes);
+
+    var soundSelect = ui.el('select', {
+      style: { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' },
+      onchange: async function (e) {
+        await db.setSetting('soundTheme', e.target.value);
+        if (rewards.playTheme) rewards.playTheme(e.target.value);
+      }
+    }, themeKeys.map(function (k) {
+      return ui.el('option', { value: k, selected: state.soundTheme === k }, themes[k].label);
+    }));
+
+    var previewSoundBtn = ui.el('button', {
+      class: 'btn small',
+      onclick: function () {
+        if (rewards.playTheme) rewards.playTheme(soundSelect.value);
+      }
+    }, 'Preview');
+
+    var soundRow = ui.el('div', { class: 'toggle-row' }, [
+      ui.el('div', null, [
+        ui.el('div', { class: 'toggle-label' }, 'Reward sound'),
+        ui.el('div', { class: 'toggle-desc' }, 'Choose the audio chime theme played when saving as complete')
+      ]),
+      ui.el('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } }, [
+        soundSelect,
+        previewSoundBtn
+      ])
+    ]);
+
+    /* Confetti preview button */
+    var previewConfettiBtn = ui.el('button', {
+      class: 'btn small',
+      onclick: function () {
+        if (rewards.burstConfetti) rewards.burstConfetti();
+      }
+    }, 'Preview confetti');
+
     var container = ui.el('div', { class: 'form' }, [
       toggle('Dark mode', 'Switch between dark and light theme', state.theme === 'dark', async function (on) {
         var t = on ? 'dark' : 'light';
@@ -97,9 +139,17 @@
       toggle('Audio chime', 'Play a chime when saving an entry as complete', state.audio !== false, async function (on) {
         await db.setSetting('audioEnabled', on);
       }),
+      soundRow,
       toggle('Confetti', 'Show confetti animation when saving an entry as complete', state.confetti !== false, async function (on) {
         await db.setSetting('confettiEnabled', on);
-      })
+      }),
+      ui.el('div', { class: 'toggle-row' }, [
+        ui.el('div', null, [
+          ui.el('div', { class: 'toggle-label' }, 'Preview effects'),
+          ui.el('div', { class: 'toggle-desc' }, 'Test the confetti animation without saving an entry')
+        ]),
+        previewConfettiBtn
+      ])
     ]);
     return container;
   }

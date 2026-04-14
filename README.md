@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.7.0**
+**v2.8.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -193,6 +193,17 @@ serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
 
 ## Changelog
+
+### v2.8.0
+- Confetti upgrade: multicolor cannon burst with 180 particles, varied
+  shapes (rectangles, circles, streamers, stars), wobble, drag, and
+  fade-out
+- Synthesized sound library with 6 reward chime themes: Ascending Chime
+  (default), Bright Bell, Fanfare, Soft Ding, Level Up, Success Chord.
+  All synthesized via Web Audio API — no external files, no copyright
+  concerns, no CSP impact
+- Settings: sound theme dropdown with preview button, confetti preview
+  button
 
 ### v2.7.0
 - Obsidian-compatible markdown export with YAML frontmatter and hash tags
