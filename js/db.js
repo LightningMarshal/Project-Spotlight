@@ -78,10 +78,12 @@
       },
       /* Domain-specific fields — People Management */
       interactionType: e.interactionType || '',
+      interactionTypeOther: e.interactionTypeOther || '',
       meetingDirection: e.meetingDirection || '',
       individual: e.individual || '',
       sentiment: e.sentiment || '',
       developmentTheme: e.developmentTheme || '',
+      developmentThemeOther: e.developmentThemeOther || '',
       followUpAction: e.followUpAction || '',
       followUpDescription: e.followUpDescription || '',
       followUpTargetDate: e.followUpTargetDate || '',

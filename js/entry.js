@@ -18,10 +18,12 @@
       date: db.todayIso(),
       tags: tax.emptyTags(),
       interactionType: '',
+      interactionTypeOther: '',
       meetingDirection: '',
       individual: '',
       sentiment: '',
       developmentTheme: '',
+      developmentThemeOther: '',
       followUpAction: '',
       followUpDescription: '',
       followUpTargetDate: '',
@@ -148,6 +150,82 @@
       ]);
     }
 
+    /* Select whose enum contains an "Other" option. When "Other" is the
+     * current value, a companion text input is revealed so the user can
+     * specify what the "Other" actually is. The main select continues to
+     * store the raw enum value — this preserves chart bucketing — while
+     * the custom label lives in a companion field. */
+    function makeSelectWithOther(options, value, otherValue, placeholder, onSelect, onOtherChange) {
+      var textInput = ui.el('input', {
+        type: 'text',
+        value: otherValue || '',
+        placeholder: 'Specify…',
+        style: { marginTop: '6px' },
+        oninput: function (e) { onOtherChange(e.target.value); }
+      });
+      if (value !== 'Other') textInput.style.display = 'none';
+
+      var select = ui.el('select', {
+        onchange: function (e) {
+          onSelect(e.target.value);
+          if (e.target.value === 'Other') {
+            textInput.style.display = '';
+            setTimeout(function () { textInput.focus(); }, 20);
+          } else {
+            textInput.style.display = 'none';
+          }
+        }
+      }, [
+        ui.el('option', { value: '' }, placeholder),
+        ...options.map(function (o) {
+          return ui.el('option', { value: o, selected: value === o }, o);
+        })
+      ]);
+
+      return ui.el('div', null, [select, textInput]);
+    }
+
+    /* Individual select with "Other…" synthesized onto the end of the
+     * roster. Typed name writes directly to `working.individual`, since
+     * Individual is free-form by nature. On re-edit, a stored value that
+     * isn't in the roster is treated as an "Other…" selection with the
+     * stored value pre-filled. */
+    function makeIndividualField(roster, current, placeholder, onChange) {
+      var isOther = !!current && roster.indexOf(current) === -1;
+      var displayVal = isOther ? 'Other…' : current;
+      var rosterWithOther = roster.concat(['Other…']);
+
+      var textInput = ui.el('input', {
+        type: 'text',
+        value: isOther ? current : '',
+        placeholder: 'Name…',
+        style: { marginTop: '6px' },
+        oninput: function (e) { onChange(e.target.value); }
+      });
+      if (!isOther) textInput.style.display = 'none';
+
+      var select = ui.el('select', {
+        onchange: function (e) {
+          var v = e.target.value;
+          if (v === 'Other…') {
+            textInput.style.display = '';
+            onChange(textInput.value || '');
+            setTimeout(function () { textInput.focus(); }, 20);
+          } else {
+            textInput.style.display = 'none';
+            onChange(v);
+          }
+        }
+      }, [
+        ui.el('option', { value: '' }, placeholder),
+        ...rosterWithOther.map(function (o) {
+          return ui.el('option', { value: o, selected: displayVal === o }, o);
+        })
+      ]);
+
+      return ui.el('div', null, [select, textInput]);
+    }
+
     /* ---------- Domain-specific fields ---------- */
 
     function renderDomainFields() {
@@ -161,7 +239,14 @@
         domainFieldsContainer.appendChild(ui.el('div', { class: 'form-row form-row-triple' }, [
           ui.el('div', null, [
             ui.el('label', null, 'Interaction Type'),
-            makeSelect(tax.INTERACTION_TYPES, working.interactionType, 'Select type…', function (e) { working.interactionType = e.target.value; })
+            makeSelectWithOther(
+              tax.INTERACTION_TYPES,
+              working.interactionType,
+              working.interactionTypeOther,
+              'Select type…',
+              function (v) { working.interactionType = v; if (v !== 'Other') working.interactionTypeOther = ''; },
+              function (v) { working.interactionTypeOther = v; }
+            )
           ]),
           ui.el('div', null, [
             ui.el('label', null, 'Meeting Direction'),
@@ -169,9 +254,7 @@
           ]),
           ui.el('div', null, [
             ui.el('label', null, 'Individual'),
-            allPeople.length
-              ? makeSelect(allPeople, working.individual, 'Select person…', function (e) { working.individual = e.target.value; })
-              : ui.el('input', { type: 'text', value: working.individual || '', placeholder: 'Name (add to roster in Settings)', oninput: function (e) { working.individual = e.target.value; } })
+            makeIndividualField(allPeople, working.individual, allPeople.length ? 'Select person…' : 'Name…', function (v) { working.individual = v; })
           ])
         ]));
         domainFieldsContainer.appendChild(ui.el('div', { class: 'form-row form-row-split' }, [
@@ -181,7 +264,14 @@
           ]),
           ui.el('div', null, [
             ui.el('label', null, 'Development Theme'),
-            makeSelect(tax.DEVELOPMENT_THEMES, working.developmentTheme, 'Select…', function (e) { working.developmentTheme = e.target.value; })
+            makeSelectWithOther(
+              tax.DEVELOPMENT_THEMES,
+              working.developmentTheme,
+              working.developmentThemeOther,
+              'Select…',
+              function (v) { working.developmentTheme = v; if (v !== 'Other') working.developmentThemeOther = ''; },
+              function (v) { working.developmentThemeOther = v; }
+            )
           ])
         ]));
         /* Follow-up action */
@@ -209,7 +299,14 @@
         domainFieldsContainer.appendChild(ui.el('div', { class: 'form-row form-row-triple' }, [
           ui.el('div', null, [
             ui.el('label', null, 'Interaction Type'),
-            makeSelect(tax.INTERACTION_TYPES, working.interactionType, 'Select type…', function (e) { working.interactionType = e.target.value; })
+            makeSelectWithOther(
+              tax.INTERACTION_TYPES,
+              working.interactionType,
+              working.interactionTypeOther,
+              'Select type…',
+              function (v) { working.interactionType = v; if (v !== 'Other') working.interactionTypeOther = ''; },
+              function (v) { working.interactionTypeOther = v; }
+            )
           ]),
           ui.el('div', null, [
             ui.el('label', null, 'Company Name'),
@@ -217,9 +314,7 @@
           ]),
           ui.el('div', null, [
             ui.el('label', null, 'Individual'),
-            allPeople.length
-              ? makeSelect(allPeople, working.individual, 'Select person…', function (e) { working.individual = e.target.value; })
-              : ui.el('input', { type: 'text', value: working.individual || '', placeholder: 'Contact name…', oninput: function (e) { working.individual = e.target.value; } })
+            makeIndividualField(allPeople, working.individual, allPeople.length ? 'Select person…' : 'Contact name…', function (v) { working.individual = v; })
           ])
         ]));
         domainFieldsContainer.appendChild(ui.el('div', { class: 'form-row form-row-split' }, [

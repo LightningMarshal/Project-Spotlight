@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.9.0**
+**v2.10.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -193,6 +193,22 @@ serve.py  (developer fallback only — see "Enterprise deployment" above)
 ```
 
 ## Changelog
+
+### v2.10.0
+- Entry form now supports free-text labels when "Other" is selected:
+  - **Individual** field (People Management & Client Facing) gains an
+    "Other…" option that reveals a name field — use it for skip-level
+    meetings, peers in other orgs, or customer contacts without
+    polluting the roster
+  - **Interaction Type** reveals a text input when "Other" is selected,
+    stored in companion field `interactionTypeOther`
+  - **Development Theme** reveals a text input when "Other" is
+    selected, stored in companion field `developmentThemeOther`
+- Charts and monthly aggregations continue to bucket all "Other"
+  entries together — the custom label is per-entry metadata, not a new
+  chart bucket
+- Obsidian export YAML frontmatter and detail sections emit the custom
+  label when present, falling back to the raw enum otherwise
 
 ### v2.9.0
 - Three togglable visual theme packs, each with full dark/light/system

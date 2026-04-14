@@ -15,6 +15,15 @@
   const db  = window.Uptrack.db;
   const filters = window.Uptrack.filters;
 
+  /* Prefer the custom "Other" label when the main enum value is 'Other'
+   * and a companion label is present. Used by all display-facing exports
+   * so charts/aggregations continue to see the raw enum while humans see
+   * the specific label. */
+  function labelOrOther(main, other) {
+    if (main === 'Other' && other && other.trim()) return other.trim();
+    return main;
+  }
+
   function pad(n) { return String(n).padStart(2, '0'); }
   function ts() {
     const d = new Date();
@@ -239,10 +248,10 @@
       if (e.domain) lines.push('domain: ' + e.domain);
       if (e.impact) lines.push('impact: ' + e.impact);
       if (e.individual) lines.push('individual: "' + yamlEscape(e.individual) + '"');
-      if (e.interactionType) lines.push('interaction_type: ' + e.interactionType);
+      if (e.interactionType) lines.push('interaction_type: "' + yamlEscape(labelOrOther(e.interactionType, e.interactionTypeOther)) + '"');
       if (e.sentiment) lines.push('sentiment: ' + e.sentiment);
       if (e.customerSentiment) lines.push('customer_sentiment: ' + e.customerSentiment);
-      if (e.developmentTheme) lines.push('development_theme: ' + e.developmentTheme);
+      if (e.developmentTheme) lines.push('development_theme: "' + yamlEscape(labelOrOther(e.developmentTheme, e.developmentThemeOther)) + '"');
       if (e.companyName) lines.push('company: "' + yamlEscape(e.companyName) + '"');
       if (e.projectNumber) lines.push('project_number: "' + yamlEscape(e.projectNumber) + '"');
       if (e.followUpAction) {
@@ -292,10 +301,10 @@
       /* Domain-specific details */
       var details = [];
       if (e.individual) details.push('- **Individual:** ' + e.individual);
-      if (e.interactionType) details.push('- **Interaction Type:** ' + e.interactionType);
+      if (e.interactionType) details.push('- **Interaction Type:** ' + labelOrOther(e.interactionType, e.interactionTypeOther));
       if (e.meetingDirection) details.push('- **Meeting Direction:** ' + e.meetingDirection);
       if (e.sentiment) details.push('- **Sentiment:** ' + e.sentiment);
-      if (e.developmentTheme) details.push('- **Development Theme:** ' + e.developmentTheme);
+      if (e.developmentTheme) details.push('- **Development Theme:** ' + labelOrOther(e.developmentTheme, e.developmentThemeOther));
       if (e.companyName) details.push('- **Company:** ' + e.companyName);
       if (e.customerSentiment) details.push('- **Customer Sentiment:** ' + e.customerSentiment);
       if (e.escalationNumber) details.push('- **Escalation Number:** ' + e.escalationNumber);

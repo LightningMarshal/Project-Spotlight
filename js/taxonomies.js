@@ -86,10 +86,12 @@
     return {
       // People Management fields
       interactionType: '',
+      interactionTypeOther: '',
       meetingDirection: '',
       individual: '',
       sentiment: '',
       developmentTheme: '',
+      developmentThemeOther: '',
       followUpAction: '',
       followUpDescription: '',
       followUpTargetDate: '',
