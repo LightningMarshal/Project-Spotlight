@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.12.0**
+**v2.13.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -222,6 +222,70 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.13.0
+- **Data Review is now a widget-based dashboard.** The page is composed
+  of eleven independent widgets that each respond to the shared filter
+  bar and can be toggled on or off. Preferences persist to the
+  `settings` object store under key `dataReviewWidgets`, so the layout
+  a user tunes on one sitting is still theirs on the next launch.
+  Widgets:
+  1. **Summary statistics row** — total, completed, critical, high,
+     client facing, high+critical percentage, open follow-ups.
+  2. **Domain distribution over time** — stacked bars of entries per
+     month broken out by domain, surfacing shifts in how a manager is
+     spending their tracked time.
+  3–5. **Company values / Culture tenets / Principles alignment** —
+     proportional horizontal bars showing raw count *and* percentage of
+     total entries per taxonomy item, so underrepresented items read
+     as underrepresented instead of being scaled away against the
+     largest bar.
+  6. **Taxonomy gap indicator (redesigned)** — sorted ascending with
+     zero-usage items flagged `NOT USED` in a dashed outline, ranking
+     the most overlooked items at the top of the list.
+  7. **Impact quality over time** — monthly percentage of entries at
+     High or Critical impact, plotted against a fixed 0–100 y-axis.
+  8. **Cross-dimensional: impact by domain** — grouped side-by-side
+     bars showing the four impact levels within each of the four
+     domains, surfacing where high-impact work is concentrated.
+  9. **Visibility index** — hero card reporting the unique entries
+     that demonstrate visibility beyond one's team (Client Facing
+     domain, Skip Level interactions, or tagged with Lead The Way /
+     Own The Outcome tenets), with a component breakdown.
+  10. **Period comparison** — two independent date-range selectors
+     produce a side-by-side diff of total, completed, critical, high,
+     client facing, and high+critical percentage, with signed deltas
+     and percentage-change indicators.
+  11. **Individual manager view** — the preserved per-person view
+     showing sentiment trajectory, development themes, interaction
+     types, and follow-up actions for any individual (People
+     Management or Client Facing) selected from the dropdown.
+- **Proportional bar charts everywhere taxonomy frequency is shown.**
+  Monthly, Annual, and Data Review taxonomy widgets now scale bars
+  against the *total entries in scope* rather than the largest bar in
+  the set, and each bar's right-hand label pairs the raw count with
+  its percentage of total. A full-width track behind each bar makes
+  underrepresentation visible at a glance.
+- **Additional stat cards on Landing, Annual, and Stakeholder.** Every
+  top-level stat row now includes a Client Facing count and a
+  High + Critical percentage so the two health indicators the new
+  widgets expose are visible on every entry point, not only on Data
+  Review.
+- **Theme-aware chart colors.** Chart primitives now resolve color
+  tokens from CSS custom properties at render time, so the Arctic,
+  Futuristic, and Minimal theme packs (both dark and light modes)
+  all render charts in their own palettes instead of the hard-coded
+  amber Arctic palette. Four new domain CSS variables
+  (`--domain-operations`, `--domain-project`,
+  `--domain-people-management`, `--domain-client-facing`) let each
+  theme pack override the domain color ramp independently.
+- **New chart primitives** in `js/charts.js`: `groupedBarChart` (used
+  by the Impact by Domain widget), aggregators `domainByMonth`,
+  `impactQualityByMonth`, `visibilityIndex`, and a redesigned
+  `gapIndicator` that ranks ascending and flags `NOT USED` items.
+  `stackedBarChart` was generalized so it accepts custom keys /
+  colors and now drives both the Impact-by-domain view and the
+  Domain-over-time view.
 
 ### v2.12.0
 - **Full backup now covers every object store.** `db.exportAll()`

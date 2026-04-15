@@ -63,24 +63,31 @@
       var complete  = yearEntries.filter(function (e) { return e.status === 'complete'; });
       var criticals = yearEntries.filter(function (e) { return e.impact === 'Critical'; });
       var highs     = yearEntries.filter(function (e) { return e.impact === 'High'; });
+      var clientFacing = yearEntries.filter(function (e) { return e.domain === 'Client Facing'; });
+      var hcPct = yearEntries.length > 0
+        ? Math.round(((criticals.length + highs.length) / yearEntries.length) * 100) + '%'
+        : '0%';
       content.appendChild(ui.el('div', { class: 'stats-row' }, [
         stat('Total entries', yearEntries.length),
         stat('Completed', complete.length),
         stat('Critical impact', criticals.length),
         stat('High impact', highs.length),
+        stat('High + Critical', hcPct),
+        stat('Client facing', clientFacing.length),
         stat('People logs', yearLogs.length)
       ]));
 
       /* Charts */
       var grid = ui.el('div', { class: 'charts-grid' });
+      var yt = yearEntries.length;
       grid.appendChild(chartCard('Volume by month', charts.lineChart(charts.volumeOverTime(yearEntries, 'month'))));
       grid.appendChild(chartCard('Entries by domain', charts.barChart(charts.byDomain(yearEntries))));
       grid.appendChild(chartCard('Impact by domain (stacked)', charts.stackedBarChart(charts.impactByDomain(yearEntries))));
       grid.appendChild(chartCard('Impact distribution', charts.barChart(charts.byImpact(yearEntries))));
-      grid.appendChild(chartCard('Company values — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'values'))));
-      grid.appendChild(chartCard('Culture tenets — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'tenets'))));
-      grid.appendChild(chartCard('Principles — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'principles'))));
-      grid.appendChild(chartCard('Taxonomy gap indicator', charts.gapIndicator(charts.gapData(yearEntries))));
+      grid.appendChild(chartCard('Company values — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'values'), { total: yt })));
+      grid.appendChild(chartCard('Culture tenets — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'tenets'), { total: yt })));
+      grid.appendChild(chartCard('Principles — frequency', charts.horizontalBarChart(charts.tagFrequency(yearEntries, 'principles'), { total: yt })));
+      grid.appendChild(chartCard('Taxonomy gap indicator', charts.gapIndicator(charts.gapData(yearEntries), { total: yt })));
       content.appendChild(grid);
 
       /* Monthly rollup */

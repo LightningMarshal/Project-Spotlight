@@ -63,10 +63,16 @@
       var matched = filters.apply(allEntries, state.filters);
 
       /* Stats */
+      var crit = matched.filter(function (e) { return e.impact === 'Critical'; }).length;
+      var high = matched.filter(function (e) { return e.impact === 'High'; }).length;
+      var cf   = matched.filter(function (e) { return e.domain === 'Client Facing'; }).length;
+      var hcPct = matched.length > 0 ? Math.round(((crit + high) / matched.length) * 100) + '%' : '0%';
       content.appendChild(ui.el('div', { class: 'stats-row' }, [
         stat('Matched', matched.length),
-        stat('Critical', matched.filter(function (e) { return e.impact === 'Critical'; }).length),
-        stat('High', matched.filter(function (e) { return e.impact === 'High'; }).length)
+        stat('Critical', crit),
+        stat('High', high),
+        stat('High + Critical', hcPct),
+        stat('Client facing', cf)
       ]));
 
       /* Preview */

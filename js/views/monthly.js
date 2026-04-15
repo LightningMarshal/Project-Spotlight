@@ -216,14 +216,15 @@
 
   function renderMonthCharts(entries) {
     const grid = ui.el('div', { class: 'charts-grid' });
+    const total = entries.length;
     grid.appendChild(chartCard('Volume by day', charts.lineChart(charts.volumeOverTime(entries, 'day'))));
     grid.appendChild(chartCard('Entries by domain', charts.barChart(charts.byDomain(entries))));
     grid.appendChild(chartCard('Impact by domain (stacked)', charts.stackedBarChart(charts.impactByDomain(entries))));
     grid.appendChild(chartCard('Impact distribution', charts.barChart(charts.byImpact(entries))));
-    grid.appendChild(chartCard('Company values — frequency', charts.horizontalBarChart(charts.tagFrequency(entries, 'values'))));
-    grid.appendChild(chartCard('Culture tenets — frequency', charts.horizontalBarChart(charts.tagFrequency(entries, 'tenets'))));
-    grid.appendChild(chartCard('Principles — frequency', charts.horizontalBarChart(charts.tagFrequency(entries, 'principles'))));
-    grid.appendChild(chartCard('Taxonomy gap indicator', charts.gapIndicator(charts.gapData(entries))));
+    grid.appendChild(chartCard('Company values — frequency', charts.horizontalBarChart(charts.tagFrequency(entries, 'values'), { total: total })));
+    grid.appendChild(chartCard('Culture tenets — frequency', charts.horizontalBarChart(charts.tagFrequency(entries, 'tenets'), { total: total })));
+    grid.appendChild(chartCard('Principles — frequency', charts.horizontalBarChart(charts.tagFrequency(entries, 'principles'), { total: total })));
+    grid.appendChild(chartCard('Taxonomy gap indicator', charts.gapIndicator(charts.gapData(entries), { total: total })));
     return grid;
   }
 
