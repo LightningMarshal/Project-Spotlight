@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.13.0**
+**v2.13.1**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -222,6 +222,22 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.13.1
+- **Fix: Obsidian export YAML frontmatter corrupted by backslashes,
+  newlines, and control characters in user input.** `yamlEscape` only
+  escaped the double-quote character, but the exporter builds
+  double-quoted YAML scalars for user-editable fields (title,
+  individual, interaction_type, development_theme, company,
+  project_number, follow_up). Realistic input silently broke the
+  frontmatter: a Windows path like `C:\Users\foo` in the Company field
+  produced `company: "C:\Users\foo"`, which YAML parses as the start
+  of a `\U` 8-digit Unicode escape, rejecting the whole block; a
+  pasted multi-line title broke the scalar across lines; tab and CR
+  produced similar corruption. `yamlEscape` now escapes `\`, `"`,
+  `\r`, `\n`, and `\t` in that specific order (backslash first, to
+  avoid double-escaping subsequent replacements), matching the
+  standard double-quoted YAML escape set.
 
 ### v2.13.0
 - **Data Review is now a widget-based dashboard.** The page is composed
