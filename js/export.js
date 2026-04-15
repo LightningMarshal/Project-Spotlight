@@ -345,9 +345,22 @@
     return lines.join('\n');
   }
 
+  /* Escape a string for inclusion in a double-quoted YAML scalar.
+   * Double-quoted YAML treats `\` as an escape character, so any unescaped
+   * backslash in user input (e.g. a Windows path `C:\Users\foo`) is read as
+   * the start of an escape sequence (`\U` = 8-digit Unicode escape) and the
+   * whole frontmatter block fails to parse in Obsidian and other consumers.
+   * Likewise, raw newlines break double-quoted scalars across line boundaries.
+   * Order matters: backslash MUST be escaped first so subsequent replacements
+   * aren't double-escaped. */
   function yamlEscape(s) {
     if (!s) return '';
-    return String(s).replace(/"/g, '\\"');
+    return String(s)
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n')
+      .replace(/\t/g, '\\t');
   }
 
   function slugify(s) {
