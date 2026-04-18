@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.13.1**
+**v2.14.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -222,6 +222,23 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.14.0
+- **Backup reminders on the Today view.** The backup-overdue nag banner
+  (previously only shown on Settings) now appears on the Today / landing
+  page when `lastBackupAt` is more than 14 days old or has never been
+  set. `renderBackupNag` extracted from `settings.js` to `export.js`
+  so both views share the same implementation.
+- **Keyboard shortcuts.** `Alt+T/W/M/A/D/F/S` navigate directly to
+  Today, Weekly, Monthly, Annual, Data Review, Follow-Ups, and Settings
+  respectively. Press `?` to open a shortcut help overlay listing all
+  available bindings. Existing shortcuts (`/` for quick capture focus,
+  `Ctrl+N` / `Cmd+N` for new entry) are unchanged.
+- **CSV injection hardening.** `csvEscape` now prefixes cells that
+  start with `=`, `+`, `-`, `@`, or tab with a leading single quote
+  inside double quotes, per OWASP guidance. Prevents spreadsheet
+  formula injection when exported CSV files are opened in Excel or
+  Google Sheets.
 
 ### v2.13.1
 - **Fix: Obsidian export YAML frontmatter corrupted by backslashes,

@@ -99,24 +99,85 @@
 
     window.addEventListener('hashchange', router);
 
-    /* Global keyboard shortcut: '/' focuses quick capture on landing */
+    /* Global keyboard shortcuts */
+    var NAV_KEYS = {
+      t: '#/',
+      w: '#/weekly',
+      m: '#/monthly',
+      a: '#/annual',
+      d: '#/datareview',
+      f: '#/followups',
+      s: '#/settings'
+    };
+
     document.addEventListener('keydown', function (e) {
-      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      var tag = document.activeElement.tagName;
+      var inInput = (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT');
+      var modalOpen = document.getElementById('modal-root').hasChildNodes();
+
+      /* Alt+letter — view navigation (works even in inputs) */
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        var target = NAV_KEYS[e.key.toLowerCase()];
+        if (target) {
+          e.preventDefault();
+          window.location.hash = target;
+          return;
+        }
+      }
+
+      /* Ctrl/Cmd+N — new full entry */
+      if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        window.Uptrack.entry.open(null, { onChange: router });
+        return;
+      }
+
+      if (inInput || modalOpen) return;
+
+      /* / — focus quick capture or navigate to Today */
+      if (e.key === '/') {
         if (currentRouteName() !== 'landing') {
           window.location.hash = '#/';
         } else {
           e.preventDefault();
-          const qc = document.querySelector('.quick-capture input[type="text"]');
+          var qc = document.querySelector('.quick-capture input[type="text"]');
           if (qc) qc.focus();
         }
+        return;
       }
-      if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
+
+      /* ? — shortcut help overlay */
+      if (e.key === '?') {
         e.preventDefault();
-        window.Uptrack.entry.open(null, { onChange: router });
+        showShortcutHelp();
       }
     });
 
     router();
+  }
+
+  function showShortcutHelp() {
+    var ui = window.Uptrack.ui;
+    var shortcuts = [
+      ['/', 'Focus quick capture / go to Today'],
+      ['Ctrl+N', 'New full entry'],
+      ['Alt+T', 'Today'],
+      ['Alt+W', 'Weekly'],
+      ['Alt+M', 'Monthly'],
+      ['Alt+A', 'Annual'],
+      ['Alt+D', 'Data Review'],
+      ['Alt+F', 'Follow-Ups'],
+      ['Alt+S', 'Settings'],
+      ['?', 'This help']
+    ];
+    var rows = shortcuts.map(function (s) {
+      return ui.el('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' } }, [
+        ui.el('kbd', { style: { fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: '600', color: 'var(--accent)' } }, s[0]),
+        ui.el('span', { class: 'text-dim', style: { fontSize: '13px' } }, s[1])
+      ]);
+    });
+    var body = ui.el('div', { style: { maxWidth: '360px' } }, rows);
+    ui.openModal('Keyboard shortcuts', body);
   }
 
   if (document.readyState === 'loading') {

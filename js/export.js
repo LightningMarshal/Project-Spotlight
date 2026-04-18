@@ -110,9 +110,14 @@
 
   function csvEscape(s) {
     if (s == null) return '';
-    const str = String(s);
+    var str = String(s);
     if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1) {
-      return '"' + str.replace(/"/g, '""') + '"';
+      str = '"' + str.replace(/"/g, '""') + '"';
+    }
+    if (/^[=+\-@\t]/.test(str)) {
+      str = str.charAt(0) === '"'
+        ? '"' + "'" + str.slice(1)
+        : '"' + "'" + str + '"';
     }
     return str;
   }
@@ -407,10 +412,48 @@
     return json;
   }
 
+  /* ---------- backup nag banner ---------- */
+
+  var BACKUP_NAG_DAYS = 14;
+
+  function renderBackupNag(lastBackupAt, onBackupDone) {
+    var message;
+    if (!lastBackupAt) {
+      message = 'You have never backed up. On file:// origins, browser storage can be cleared unexpectedly — download a backup now to protect your data.';
+    } else {
+      var ageMs = Date.now() - new Date(lastBackupAt).getTime();
+      var ageDays = Math.floor(ageMs / 86400000);
+      if (ageDays < BACKUP_NAG_DAYS) return null;
+      message = 'Your last backup was ' + ageDays + ' days ago. On file:// origins, browser storage can be cleared unexpectedly — download a fresh backup now.';
+    }
+
+    return ui.el('div', {
+      class: 'form',
+      style: {
+        borderLeft: '3px solid var(--accent)',
+        marginBottom: '20px',
+        background: 'linear-gradient(to right, var(--accent-bg), var(--surface) 30%)'
+      }
+    }, [
+      ui.el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } }, [
+        ui.el('span', { class: 'badge draft' }, 'Backup overdue'),
+        ui.el('span', { class: 'text-faint', style: { fontSize: '11px' } },
+          lastBackupAt ? 'Last backup ' + new Date(lastBackupAt).toLocaleString() : 'Never backed up')
+      ]),
+      ui.el('div', { class: 'text-dim', style: { fontSize: '13px', marginBottom: '14px' } }, message),
+      ui.el('button', { class: 'btn primary', onclick: async function () {
+        await runFullBackup();
+        await db.setSetting('lastBackupAt', new Date().toISOString());
+        ui.toast('Backup downloaded');
+        onBackupDone();
+      } }, 'Download backup now')
+    ]);
+  }
+
   window.Uptrack = window.Uptrack || {};
   window.Uptrack.export = {
     generalText, generalCsv, reviewText, obsidianMarkdown, fullBackup,
     runGeneralTextExport, runGeneralCsvExport, runReviewExport, runObsidianExport, runFullBackup,
-    download
+    download, renderBackupNag
   };
 })();

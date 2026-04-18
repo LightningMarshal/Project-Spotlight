@@ -10,9 +10,10 @@
   async function render(root) {
     ui.clear(root);
 
-    const [allEntries, drafts] = await Promise.all([
+    const [allEntries, drafts, lastBackupAt] = await Promise.all([
       db.getAllEntries(),
-      db.getDrafts()
+      db.getDrafts(),
+      db.getSetting('lastBackupAt')
     ]);
 
     /* Header */
@@ -28,6 +29,10 @@
       ])
     ]);
     root.appendChild(header);
+
+    /* Backup nag — shown when overdue or never taken */
+    const nag = window.Uptrack.export.renderBackupNag(lastBackupAt, function () { render(root); });
+    if (nag) root.appendChild(nag);
 
     /* Quick capture */
     const input = ui.el('input', {
