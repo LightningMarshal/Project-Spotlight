@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.14.0**
+**v2.14.1**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -222,6 +222,15 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.14.1
+- **Fix: Roster input invisible in dark mode (Issue #2).** The "Add a
+  name…" input in the Settings roster section had no explicit
+  `background` or `border` CSS — it inherited the browser-default
+  white background, making near-white themed text (`var(--text)`)
+  virtually invisible. Added `background: var(--bg)`, `border`,
+  `border-radius`, `padding`, and focus ring to `.roster-add-row input`
+  to match every other text input in the app.
 
 ### v2.14.0
 - **Backup reminders on the Today view.** The backup-overdue nag banner
