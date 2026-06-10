@@ -58,14 +58,14 @@
       },
       tax: {
         values:     cssVar('--tax-values', '#d4a054'),
-        tenets:     cssVar('--tax-tenets', '#c48940'),
-        principles: cssVar('--tax-princ',  '#b87a30')
+        tenets:     cssVar('--tax-tenets', '#45a995'),
+        principles: cssVar('--tax-princ',  '#6b93d6')
       },
       domain: {
         'Operations':        cssVar('--domain-operations',        '#e8923e'),
-        'Project':           cssVar('--domain-project',           '#d4a054'),
-        'People Management': cssVar('--domain-people-management', '#c48940'),
-        'Client Facing':     cssVar('--domain-client-facing',     '#b87a30')
+        'Project':           cssVar('--domain-project',           '#5b8dd9'),
+        'People Management': cssVar('--domain-people-management', '#3fb59b'),
+        'Client Facing':     cssVar('--domain-client-facing',     '#b07cc6')
       },
       /* semantic */
       zero:     cssVar('--impact-critical', '#d95535'),
@@ -122,7 +122,8 @@
       const h = (d.value / max) * innerH;
       const y = padT + innerH - h;
       const color = d.color || C.bar;
-      children.push(sn('rect', { x: x, y: y, width: barW, height: h, fill: color, rx: 2 }));
+      children.push(sn('rect', { x: x, y: y, width: barW, height: h, fill: color, rx: 2 },
+        sn('title', null, d.label + ': ' + d.value)));
       children.push(sn('text', { x: x + barW / 2, y: H - padB + 16, 'text-anchor': 'middle', fill: C.label, 'font-size': 10 }, truncateLabel(d.label, 14)));
       if (d.value > 0) {
         children.push(sn('text', { x: x + barW / 2, y: y - 4, 'text-anchor': 'middle', fill: C.valueLabel, 'font-size': 10, 'font-family': 'monospace' }, d.value));
@@ -151,8 +152,9 @@
     const proportional = typeof opts.total === 'number' && opts.total > 0;
     const total = proportional ? opts.total : 0;
 
-    /* Wider right gutter when we show "N  (pp%)" instead of just "N". */
-    const padL = 150, padR = proportional ? 86 : 34, padT = 8, padB = 8;
+    /* Wider right gutter when we show "N  (pp%)" instead of just "N".
+     * padL matches gapIndicator so labels align across adjacent cards. */
+    const padL = 170, padR = proportional ? 90 : 34, padT = 8, padB = 8;
     const innerW = W - padL - padR;
     const H = padT + padB + data.length * rowH;
 
@@ -167,11 +169,14 @@
       const barW  = innerW * Math.max(0, Math.min(1, ratio));
       const color = d.color || C.bar;
       const isZero = proportional && d.value === 0;
+      const tip = d.label + ': ' + d.value +
+        (proportional ? ' (' + formatPct(total > 0 ? (d.value / total) * 100 : 0) + ')' : '');
 
       /* track (full width) behind the bar when proportional, so empty
        * and underrepresented items read as "missing from N" not as "biggest". */
       if (proportional) {
-        children.push(sn('rect', { x: padL, y: y, width: innerW, height: rowH - 8, fill: C.trackBg, rx: 2, opacity: 0.55 }));
+        children.push(sn('rect', { x: padL, y: y, width: innerW, height: rowH - 8, fill: C.trackBg, rx: 2, opacity: 0.55 },
+          sn('title', null, tip)));
       }
 
       children.push(sn('text', {
@@ -180,7 +185,7 @@
         fill: isZero ? C.zero : C.label,
         'font-size': 11,
         'font-weight': isZero ? 600 : 400
-      }, truncateLabel(d.label, 24)));
+      }, truncateLabel(d.label, 26)));
 
       if (!isZero) {
         children.push(sn('rect', {
@@ -190,7 +195,7 @@
           fill: color,
           rx: 2,
           opacity: proportional && ratio < 0.05 ? 0.75 : 1
-        }));
+        }, sn('title', null, tip)));
       }
 
       if (proportional) {
@@ -261,7 +266,8 @@
     }
     children.push(sn('path', { d: pathD, stroke: C.bar, 'stroke-width': 2, fill: 'none', 'stroke-linejoin': 'round' }));
     points.forEach(function (p) {
-      children.push(sn('circle', { cx: p.x, cy: p.y, r: 3, fill: cssVar('--surface', '#131820'), stroke: C.bar, 'stroke-width': 1.5 }));
+      children.push(sn('circle', { cx: p.x, cy: p.y, r: 3, fill: cssVar('--surface', '#131820'), stroke: C.bar, 'stroke-width': 1.5 },
+        sn('title', null, p.d.label + ': ' + p.d.value + yUnit)));
     });
 
     const labelEvery = Math.max(1, Math.ceil(points.length / 10));
@@ -318,7 +324,8 @@
         if (!v) return;
         const h = (v / max) * innerH;
         yCursor -= h;
-        children.push(sn('rect', { x: x, y: yCursor, width: barW, height: h, fill: colorMap[k] || C.bar }));
+        children.push(sn('rect', { x: x, y: yCursor, width: barW, height: h, fill: colorMap[k] || C.bar },
+          sn('title', null, c.label + ' — ' + (legendLabels ? (legendLabels[k] || k) : k) + ': ' + v)));
       });
       children.push(sn('text', { x: x + barW / 2, y: H - padB + 16, 'text-anchor': 'middle', fill: C.label, 'font-size': 10 }, truncateLabel(c.label, 14)));
       const total = totals[i];
@@ -385,7 +392,8 @@
         const h = (v / max) * innerH;
         const x = baseX + ki * barW;
         const y = padT + innerH - h;
-        children.push(sn('rect', { x: x + 1, y: y, width: Math.max(barW - 2, 1), height: h, fill: colorMap[k] || C.bar, rx: 1 }));
+        children.push(sn('rect', { x: x + 1, y: y, width: Math.max(barW - 2, 1), height: h, fill: colorMap[k] || C.bar, rx: 1 },
+          sn('title', null, c.label + ' — ' + (legendLabels ? (legendLabels[k] || k) : k) + ': ' + v)));
         if (v > 0) {
           children.push(sn('text', {
             x: x + barW / 2, y: y - 3,
@@ -476,7 +484,7 @@
           'stroke-dasharray': '3 3',
           rx: 2,
           opacity: 0.8
-        }));
+        }, sn('title', null, it.label + ': not used')));
         children.push(sn('text', {
           x: padL + innerW / 2, y: y + barH / 2 + 3,
           'text-anchor': 'middle',
@@ -491,7 +499,7 @@
           width: barW, height: barH,
           fill: color, rx: 2,
           opacity: ratio < 0.25 ? 0.7 : 0.95
-        }));
+        }, sn('title', null, it.label + ': ' + it.value + (total > 0 ? ' (' + formatPct(pct) + ')' : ''))));
       }
 
       /* right-hand numeric readout: "N (pp%)" */
@@ -584,7 +592,16 @@
       }
     }
 
-    return svg({ viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMidYMid meet' }, children);
+    /* Rendered 1:1 (width/height attrs + the .heatmap CSS override) rather
+     * than stretched to the card width like other charts — scaling up a
+     * ~250px viewBox blows the day cells and labels up to comical size. */
+    return svg({
+      viewBox: '0 0 ' + W + ' ' + H,
+      width: W,
+      height: H,
+      class: 'heatmap',
+      preserveAspectRatio: 'xMidYMid meet'
+    }, children);
   }
 
   /* Current consecutive-day capture streak, by entry date. A day counts if

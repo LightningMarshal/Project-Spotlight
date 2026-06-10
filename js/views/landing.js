@@ -26,7 +26,7 @@
       ui.el('div', { class: 'btn-row' }, [
         ui.el('button', { class: 'btn primary', onclick: function () {
           entryMod.open(null, { onChange: function () { render(root); } });
-        } }, 'New full entry')
+        } }, [ui.icon('plus'), 'New full entry'])
       ])
     ]);
     root.appendChild(header);
@@ -50,7 +50,10 @@
     const qc = ui.el('div', { class: 'quick-capture' }, [
       ui.el('label', null, 'Quick capture'),
       ui.el('div', { class: 'quick-capture-row' }, [
-        input,
+        ui.el('div', { class: 'qc-input-wrap' }, [
+          input,
+          ui.el('span', { class: 'qc-kbd', 'aria-hidden': 'true' }, '/')
+        ]),
         ui.el('button', { class: 'btn', onclick: async function () {
           if (!input.value.trim()) { input.focus(); return; }
           const saved = await entryMod.quickCreate(input.value);
@@ -63,10 +66,6 @@
       ui.el('div', { class: 'hint' }, 'Drafts save immediately. Add metadata any time.')
     ]);
     root.appendChild(qc);
-
-    /* Tagline */
-    root.appendChild(ui.el('div', { class: 'tagline' },
-      'Every organization should be so effective at security operations that both the likelihood and impact of a cyber attack is minimized to the point where risk is essentially zero.'));
 
     setTimeout(function () { input.focus(); }, 20);
 
@@ -83,12 +82,13 @@
     }
     root.appendChild(draftSection);
 
-    /* Recent */
+    /* Recent — drafts are excluded here because they already have their own
+     * (more prominent) section above; listing them twice just adds noise. */
     const today = ui.today();
     const sevenDaysAgo = new Date(today); sevenDaysAgo.setDate(today.getDate() - 7);
     const recent = allEntries.filter(function (e) {
       const d = ui.parseIso(e.date);
-      return d >= sevenDaysAgo && d <= today;
+      return e.status !== 'draft' && d >= sevenDaysAgo && d <= today;
     });
     const recentSection = ui.el('section', { class: 'section' }, [
       ui.el('h2', { class: 'section-title' }, 'Last 7 days — ' + recent.length)
@@ -119,7 +119,7 @@
     const hc = allEntries.filter(function (e) { return e.impact === 'High' || e.impact === 'Critical'; });
     const hcPct = allEntries.length > 0 ? Math.round((hc.length / allEntries.length) * 100) + '%' : '0%';
     const stats = ui.el('div', { class: 'stats-row' }, [
-      ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Total entries'),  ui.el('div', { class: 'value' }, allEntries.length)]),
+      ui.el('div', { class: 'stat-card accent' }, [ui.el('div', { class: 'label' }, 'Total entries'),  ui.el('div', { class: 'value' }, allEntries.length)]),
       ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Completed'),      ui.el('div', { class: 'value' }, complete.length)]),
       ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Drafts'),         ui.el('div', { class: 'value' }, drafts.length)]),
       ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Client facing'),  ui.el('div', { class: 'value' }, clientFacing.length)]),

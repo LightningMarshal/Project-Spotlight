@@ -109,7 +109,7 @@
 
     var domainFieldsContainer = ui.el('div', null);
 
-    var domainSeg = ui.el('div', { class: 'segmented' },
+    var domainSeg = ui.el('div', { class: 'segmented domain-grid' },
       tax.DOMAINS.map(function (d) {
         return segButton('', d, function (v) {
           working.domain = v;
@@ -389,13 +389,12 @@
       ]),
       ui.el('div', { class: 'form-row form-row-split' }, [
         ui.el('div', null, [ui.el('label', null, 'Domain'), domainSeg]),
-        ui.el('div', null, [ui.el('label', null, 'Impact'), impactSeg])
+        ui.el('div', null, [
+          ui.el('label', null, 'Impact'), impactSeg,
+          ui.el('label', { style: { marginTop: '14px' } }, 'Date'), dateInput
+        ])
       ]),
       domainFieldsContainer,
-      ui.el('div', { class: 'form-row' }, [
-        ui.el('label', null, 'Date'),
-        dateInput
-      ]),
       ui.el('div', { class: 'form-row' }, [
         ui.el('label', null, 'Tags'),
         tagGroup('values'),

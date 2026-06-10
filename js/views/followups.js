@@ -70,8 +70,8 @@
       /* Stats */
       content.appendChild(ui.el('div', { class: 'stats-row' }, [
         stat('Total', followUps.length),
-        stat('Open', open.length),
-        stat('Overdue', overdue.length),
+        stat('Open', open.length, 'accent'),
+        stat('Overdue', overdue.length, overdue.length ? 'danger' : ''),
         stat('Dismissed', dismissed.length)
       ]));
 
@@ -175,8 +175,8 @@
     updateContent();
   }
 
-  function stat(label, value) {
-    return ui.el('div', { class: 'stat-card' }, [
+  function stat(label, value, kind) {
+    return ui.el('div', { class: 'stat-card' + (kind ? ' ' + kind : '') }, [
       ui.el('div', { class: 'label' }, label),
       ui.el('div', { class: 'value' }, value)
     ]);

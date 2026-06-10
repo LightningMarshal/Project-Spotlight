@@ -68,7 +68,7 @@
         ? Math.round(((criticals.length + highs.length) / yearEntries.length) * 100) + '%'
         : '0%';
       content.appendChild(ui.el('div', { class: 'stats-row' }, [
-        stat('Total entries', yearEntries.length),
+        stat('Total entries', yearEntries.length, 'accent'),
         stat('Completed', complete.length),
         stat('Critical impact', criticals.length),
         stat('High impact', highs.length),
@@ -154,8 +154,8 @@
     return byMonth;
   }
 
-  function stat(label, value) {
-    return ui.el('div', { class: 'stat-card' }, [
+  function stat(label, value, kind) {
+    return ui.el('div', { class: 'stat-card' + (kind ? ' ' + kind : '') }, [
       ui.el('div', { class: 'label' }, label),
       ui.el('div', { class: 'value' }, value)
     ]);

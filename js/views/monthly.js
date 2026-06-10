@@ -147,10 +147,10 @@
     } else {
       /* Stats row */
       container.appendChild(ui.el('div', { class: 'stats-row', style: { marginBottom: '16px' } }, [
-        aggStat('Interactions', stats.totalInteractions),
+        aggStat('Interactions', stats.totalInteractions, 'accent'),
         aggStat('Individuals', Object.keys(stats.byIndividual).length),
         aggStat('Follow-ups', stats.followUps),
-        aggStat('Open actions', stats.followUpsOpen)
+        aggStat('Open actions', stats.followUpsOpen, stats.followUpsOpen ? 'danger' : '')
       ]));
 
       /* Breakdowns in a grid */
@@ -198,8 +198,8 @@
     return container;
   }
 
-  function aggStat(label, value) {
-    return ui.el('div', { class: 'stat-card' }, [
+  function aggStat(label, value, kind) {
+    return ui.el('div', { class: 'stat-card' + (kind ? ' ' + kind : '') }, [
       ui.el('div', { class: 'label' }, label),
       ui.el('div', { class: 'value' }, value)
     ]);

@@ -28,7 +28,10 @@
     const root = document.getElementById('view');
     /* Active nav state */
     document.querySelectorAll('.nav a').forEach(function (a) {
-      a.classList.toggle('active', a.getAttribute('data-route') === name);
+      var active = a.getAttribute('data-route') === name;
+      a.classList.toggle('active', active);
+      if (active) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
     });
     document.title = 'Uptrack — ' + routes[name].title;
     updateFollowupsBadge();
@@ -128,6 +131,21 @@
       document.documentElement.setAttribute('data-theme-mode', mode);
     } catch (e) { /* non-fatal */ }
 
+    /* Nav icons — decorated at boot so index.html stays plain markup */
+    var NAV_ICONS = {
+      landing: 'home',
+      weekly: 'calendar-week',
+      monthly: 'calendar',
+      annual: 'trending-up',
+      datareview: 'bar-chart',
+      followups: 'check-circle',
+      settings: 'sliders'
+    };
+    document.querySelectorAll('.nav a').forEach(function (a) {
+      var name = NAV_ICONS[a.getAttribute('data-route')];
+      if (name) a.insertBefore(window.Uptrack.ui.icon(name), a.firstChild);
+    });
+
     window.addEventListener('hashchange', router);
 
     /* Global keyboard shortcuts */
@@ -145,6 +163,16 @@
       var tag = document.activeElement.tagName;
       var inInput = (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT');
       var modalOpen = document.getElementById('modal-root').hasChildNodes();
+
+      /* Ctrl/Cmd+K — command palette (toggle). Not while an entry modal
+       * is open, to keep the focus trap and unsaved-changes guard intact. */
+      if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
+        if (modalOpen) return;
+        e.preventDefault();
+        window.Uptrack.palette.open();
+        return;
+      }
+      if (window.Uptrack.palette.isOpen()) return;
 
       /* Alt+letter — view navigation and new entry (works even in inputs).
        * Alt+N replaces the old Ctrl/Cmd+N binding: browsers reserve Ctrl+N
@@ -195,6 +223,7 @@
     var ui = window.Uptrack.ui;
     var shortcuts = [
       ['/', 'Focus quick capture / go to Today'],
+      ['Ctrl+K', 'Command palette'],
       ['Alt+N', 'New full entry'],
       ['Alt+T', 'Today'],
       ['Alt+W', 'Weekly'],

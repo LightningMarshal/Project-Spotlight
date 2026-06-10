@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.16.0**
+**v2.19.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -126,6 +126,7 @@ of truth.
 | Key               | Action                                  |
 | ----------------- | --------------------------------------- |
 | `/`               | Focus the quick-capture field           |
+| `Ctrl/Cmd + K`    | Command palette (views, actions, entry search) |
 | `Alt + N`         | Open the full entry form                |
 | `Alt + T`         | Go to Today                             |
 | `Alt + W`         | Go to Weekly                            |
@@ -194,7 +195,7 @@ index.html
 css/styles.css
 js/taxonomies.js    js/db.js          js/ui.js
 js/filters.js       js/entry.js       js/charts.js      js/export.js
-js/rewards.js       js/app.js
+js/rewards.js       js/palette.js     js/app.js
 js/views/landing.js    js/views/weekly.js    js/views/monthly.js
 js/views/annual.js     js/views/stakeholder.js   js/views/datareview.js
 js/views/followups.js  js/views/settings.js
@@ -228,6 +229,65 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.19.0
+- **Command palette (`Ctrl/Cmd+K`).** Jump to any view (including the
+  unlisted Stakeholder view), run actions (new entry, download backup),
+  or find an entry by title, person, or company — arrows + Enter,
+  Escape closes. New module `js/palette.js`.
+- **Inline SVG icon set.** Hand-rolled 24×24 stroke icons (same
+  zero-asset approach as the charts) decorate the nav links, the
+  new-entry button, and the palette. New `ui.icon(name)` helper.
+- **Entry form layout.** The domain picker is a fixed 2×2 grid (no more
+  orphaned "Client Facing" row), and the Date field moved up beside
+  Impact instead of sitting below the tags.
+- **Quick capture as the hero.** Larger input with an accent focus
+  glow, an accent top border on the card, and a `/` shortcut hint
+  rendered inside the field that disappears on focus/typing.
+
+### v2.18.0
+- **Type hierarchy.** Page titles grew to 26px; section and group
+  headings switched from uppercase microtype to sentence case at
+  readable sizes. The uppercase letterspaced style is now reserved for
+  one level: annotation labels (form labels, stat labels, chart titles).
+- **Keyboard focus & accessibility.** Global `:focus-visible` outline on
+  every interactive element; the active nav link carries
+  `aria-current="page"`; Settings toggle switches are real
+  keyboard-operable switches (`role="switch"`, `aria-checked`,
+  Space/Enter); modals declare `role="dialog"`/`aria-modal` and trap Tab
+  focus inside.
+- **Chart tooltips.** Every chart primitive (bars, lines, stacks,
+  groups, gap indicator) now carries native hover tooltips with the
+  exact label and value. Horizontal bar charts share the gap
+  indicator's label gutter so adjacent cards align.
+- **Data Review two-column grid.** Compact widgets pair up side by
+  side; hero widgets (summary, visibility index, period comparison,
+  individual view) span the full width. Roughly halves the scroll.
+- **Motion.** Subtle fade/rise on view renders and modal entrance,
+  fully disabled under `prefers-reduced-motion`.
+- **Semantic stat colors.** Stat values are neutral by default; accent
+  marks the headline number per row, red flags attention-worthy counts
+  (overdue follow-ups, open actions).
+
+### v2.17.0
+- **Design polish.** First of a design-focused release series:
+  - The capture heatmap now renders at its natural GitHub-style cell size
+    instead of stretching to the full card width (which blew the labels
+    up to headline size).
+  - Domains and taxonomies get visually distinct hues (amber / blue /
+    teal / plum for domains; gold / teal / slate for taxonomies) so
+    stacked charts and chips are readable as categories. Amber stays
+    reserved for brand and actions. The Minimal pack keeps its
+    deliberate monochrome ramp; system-mode light now gets correct
+    domain colors (previously undefined).
+  - Fixed Futuristic light mode rendering dark glass panels: the pack's
+    frosted topbar/card backgrounds and on-gradient button text were
+    hard-coded dark and are now mode-aware tokens (`--glass`,
+    `--glass-2`, `--on-accent`).
+  - Drafts no longer appear twice on Today — the "Last 7 days" list
+    excludes them since they have their own section directly above.
+  - The mission tagline moved from Today (where it pushed content down
+    on the most-used screen) to a quiet footer on Settings.
 
 ### v2.16.0
 - **Taxonomy notes removed end-to-end.** The notes feature had been
