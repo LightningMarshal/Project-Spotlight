@@ -87,7 +87,7 @@
     const sevenDaysAgo = new Date(today); sevenDaysAgo.setDate(today.getDate() - 7);
     const recent = allEntries.filter(function (e) {
       const d = ui.parseIso(e.date);
-      return d >= sevenDaysAgo;
+      return d >= sevenDaysAgo && d <= today;
     });
     const recentSection = ui.el('section', { class: 'section' }, [
       ui.el('h2', { class: 'section-title' }, 'Last 7 days — ' + recent.length)

@@ -115,21 +115,25 @@
       var inInput = (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT');
       var modalOpen = document.getElementById('modal-root').hasChildNodes();
 
-      /* Alt+letter — view navigation (works even in inputs) */
+      /* Alt+letter — view navigation and new entry (works even in inputs).
+       * Alt+N replaces the old Ctrl/Cmd+N binding: browsers reserve Ctrl+N
+       * for "new window" and never deliver it to the page. */
       if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        if (e.key.toLowerCase() === 'n') {
+          /* Never open over an existing modal — openModal clears the modal
+           * root, which would destroy an in-progress entry form and bypass
+           * its unsaved-changes guard. */
+          if (modalOpen) return;
+          e.preventDefault();
+          window.Uptrack.entry.open(null, { onChange: router });
+          return;
+        }
         var target = NAV_KEYS[e.key.toLowerCase()];
         if (target) {
           e.preventDefault();
           window.location.hash = target;
           return;
         }
-      }
-
-      /* Ctrl/Cmd+N — new full entry */
-      if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        window.Uptrack.entry.open(null, { onChange: router });
-        return;
       }
 
       if (inInput || modalOpen) return;
@@ -160,7 +164,7 @@
     var ui = window.Uptrack.ui;
     var shortcuts = [
       ['/', 'Focus quick capture / go to Today'],
-      ['Ctrl+N', 'New full entry'],
+      ['Alt+N', 'New full entry'],
       ['Alt+T', 'Today'],
       ['Alt+W', 'Weekly'],
       ['Alt+M', 'Monthly'],

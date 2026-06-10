@@ -126,7 +126,15 @@ of truth.
 | Key               | Action                                  |
 | ----------------- | --------------------------------------- |
 | `/`               | Focus the quick-capture field           |
-| `Ctrl/Cmd + N`    | Open the full entry form                |
+| `Alt + N`         | Open the full entry form                |
+| `Alt + T`         | Go to Today                             |
+| `Alt + W`         | Go to Weekly                            |
+| `Alt + M`         | Go to Monthly                           |
+| `Alt + A`         | Go to Annual                            |
+| `Alt + D`         | Go to Data Review                       |
+| `Alt + F`         | Go to Follow-Ups                        |
+| `Alt + S`         | Go to Settings                          |
+| `?`               | Shortcut help overlay                   |
 | `Esc`             | Close modal                             |
 
 ## Taxonomies

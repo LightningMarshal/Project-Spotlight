@@ -124,8 +124,20 @@
     return str;
   }
 
+  /* Core fields first (stable for existing consumers), then domain-specific
+   * columns grouped People Management → shared follow-up → Client Facing →
+   * Project, then archived, timestamps last. Enum-with-"Other" fields emit
+   * the custom label via labelOrOther. */
   function generalCsv(entries) {
-    const header = ['id', 'date', 'status', 'domain', 'impact', 'title', 'description', 'values', 'tenets', 'principles', 'createdAt', 'updatedAt'];
+    const header = [
+      'id', 'date', 'status', 'domain', 'impact', 'title', 'description',
+      'values', 'tenets', 'principles',
+      'interactionType', 'meetingDirection', 'individual', 'sentiment', 'developmentTheme',
+      'followUpAction', 'followUpDescription', 'followUpTargetDate', 'followUpDismissed',
+      'companyName', 'customerSentiment', 'escalationNumber', 'escalationUrl',
+      'projectNumber', 'projectUrl', 'archived',
+      'createdAt', 'updatedAt'
+    ];
     const rows = [header.join(',')];
     entries.forEach(function (e) {
       const t = e.tags || {};
@@ -140,6 +152,22 @@
         (t.values || []).join('; '),
         (t.tenets || []).join('; '),
         (t.principles || []).join('; '),
+        labelOrOther(e.interactionType || '', e.interactionTypeOther),
+        e.meetingDirection || '',
+        e.individual || '',
+        e.sentiment || '',
+        labelOrOther(e.developmentTheme || '', e.developmentThemeOther),
+        e.followUpAction || '',
+        e.followUpDescription || '',
+        e.followUpTargetDate || '',
+        e.followUpAction ? (e.followUpDismissed ? 'true' : 'false') : '',
+        e.companyName || '',
+        e.customerSentiment || '',
+        e.escalationNumber || '',
+        e.escalationUrl || '',
+        e.projectNumber || '',
+        e.projectUrl || '',
+        e.archived ? 'true' : 'false',
         e.createdAt || '',
         e.updatedAt || ''
       ].map(csvEscape).join(','));
