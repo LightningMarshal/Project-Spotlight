@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.14.1**
+**v2.15.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -165,8 +165,8 @@ Each entry belongs to one of four domains, with domain-specific fields:
 - **Follow-Ups** — dedicated tracker for open follow-up actions sorted by
   target date, with dismiss/reopen controls and dismissed toggle
 - **Settings** — roster management (direct/indirect/leadership), theme
-  toggle, audio/confetti toggles, performance review export, archive,
-  backup & restore
+  toggle, audio/confetti toggles, taxonomy reference notes, performance
+  review export, archive, backup & restore
 - **Stakeholder** — audience-focused filter + export workflow (accessible
   via `#/stakeholder`)
 
@@ -222,6 +222,59 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.15.0
+- **Taxonomy notes UI.** The `taxonomyNotes` object store has had a full
+  persistence API, backup/restore coverage, and a README mention since
+  v1 — but no way to actually write a note. Settings now has a
+  "Taxonomy notes" section with one textarea per taxonomy item (keyed
+  `<taxonomy>:<item>`, e.g. `values:Security`). Notes save on blur, an
+  emptied note deletes the record, and storage failures surface as
+  error toasts.
+- **Removed dead `ui.escapeHtml` helper.** Exported but never called —
+  all DOM is built via `ui.el`, which uses `textContent` for user data.
+- **Documented the unused `entries` indexes.** `by_date` / `by_status` /
+  `by_domain` / `by_archived` are never queried (all reads are
+  `getAll()` + in-memory filtering); a comment in `db.js` now records
+  that they are kept only to avoid a pointless `DB_VERSION` bump.
+
+### v2.14.2
+- **Fix: CSV formula-injection guard could be bypassed.** `csvEscape`
+  quoted the value first and tested for a formula prefix second, so a
+  cell starting with `=`, `+`, `-`, `@`, or tab that *also* contained a
+  comma, quote, or newline (e.g. `=HYPERLINK("…"),x`) was quoted but
+  never neutralized — Excel would unquote it and execute the formula.
+  The prefix is now neutralized on the raw value before quoting, and a
+  lone `\r` now also triggers quoting.
+- **Fix: People Management month header shifted a month in western
+  timezones.** `new Date('YYYY-MM-01')` parses as UTC midnight, which
+  is the last day of the *previous* month in any negative UTC offset.
+  Now parsed with the local-time `parseIso` helper.
+- **Fix: quick capture lost the typed title on storage failure.** The
+  input was cleared unconditionally after the save attempt; it is now
+  cleared only when the draft actually saved.
+- **Fix: switching an entry's domain carried stale domain-specific
+  fields.** Changing People Management → Project (etc.) silently kept
+  the old interaction type, sentiment, individual, follow-up, and
+  similar fields, which then leaked into Obsidian exports, the
+  Follow-Ups view, and the visibility index. `normalizeEntry` now
+  persists each domain-specific field only for the domain it belongs
+  to, and the entry form drops an interaction type that isn't valid
+  for the newly selected domain.
+- **Fix: silent storage failures in Settings and the backup nag.**
+  Roster add/remove, theme pack/mode, sound theme, and the audio /
+  confetti toggles awaited `setSetting` with no error handling; the
+  backup-nag button likewise had no catch around the backup itself.
+  All now surface error toasts (roster changes also roll back the
+  in-memory list so the UI matches storage).
+- **Fix: modal Escape listeners accumulated.** The document-level
+  keydown listener was only removed when Escape itself closed the
+  modal; closing via the × button or backdrop leaked one listener per
+  modal opened. `closeModal` now always detaches it.
+- **Unsaved-changes guard on the entry form.** Dismissing the entry
+  modal (Cancel, ×, backdrop click, Escape) with unsaved edits now
+  asks for confirmation instead of silently discarding them, via a new
+  `beforeClose` hook on `ui.openModal`.
 
 ### v2.14.1
 - **Fix: Roster input invisible in dark mode (Issue #2).** The "Add a

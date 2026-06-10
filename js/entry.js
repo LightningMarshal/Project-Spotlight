@@ -113,6 +113,16 @@
       tax.DOMAINS.map(function (d) {
         return segButton('', d, function (v) {
           working.domain = v;
+          /* interactionType is shared between People Management and Client
+           * Facing but each uses its own enum — drop a value that isn't
+           * valid for the newly selected domain so it can't be saved into
+           * the wrong bucket. ("Other" exists in both lists and survives.) */
+          var validTypes = v === 'People Management' ? tax.INTERACTION_TYPES_PEOPLE
+            : (v === 'Client Facing' ? tax.INTERACTION_TYPES_CLIENT : []);
+          if (working.interactionType && validTypes.indexOf(working.interactionType) === -1) {
+            working.interactionType = '';
+            working.interactionTypeOther = '';
+          }
           renderDomainFields();
         }, working.domain === d);
       })
@@ -412,7 +422,7 @@
         ui.el('div', { class: 'btn-row' }, [
           ui.el('button', {
             class: 'btn subtle',
-            onclick: ui.closeModal
+            onclick: function () { if (confirmDiscard()) ui.closeModal(); }
           }, 'Cancel'),
           ui.el('button', {
             class: 'btn',
@@ -456,8 +466,18 @@
     /* Render initial domain fields */
     renderDomainFields();
 
+    /* Unsaved-changes guard: snapshot the working copy once the form is
+     * fully initialized; any dismissal (Cancel, ×, backdrop, Escape) while
+     * the entry differs from the snapshot asks before discarding. Saves
+     * close via ui.closeModal() directly and bypass the guard. */
+    var initialSnapshot = JSON.stringify(working);
+    function confirmDiscard() {
+      if (JSON.stringify(working) === initialSnapshot) return true;
+      return window.confirm('Discard unsaved changes to this entry?');
+    }
+
     var title = working.id ? 'Edit entry' : 'New entry';
-    ui.openModal(title, form, { persistent: false });
+    ui.openModal(title, form, { beforeClose: confirmDiscard });
     setTimeout(function () { titleInput.focus(); }, 40);
   }
 

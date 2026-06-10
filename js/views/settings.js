@@ -18,7 +18,7 @@
   async function render(root) {
     ui.clear(root);
 
-    const [allEntries, archivedEntries, lastBackupAt, roster, audioEnabled, confettiEnabled, themePack, themeMode, soundTheme] = await Promise.all([
+    const [allEntries, archivedEntries, lastBackupAt, roster, audioEnabled, confettiEnabled, themePack, themeMode, soundTheme, taxNotes] = await Promise.all([
       db.getAllEntries(),
       db.getAllEntries({ includeArchived: true }).then(function (a) { return a.filter(function (e) { return e.archived; }); }),
       db.getSetting('lastBackupAt'),
@@ -27,13 +27,14 @@
       db.getSetting('confettiEnabled'),
       db.getSetting('themePack'),
       db.getSetting('themeMode'),
-      db.getSetting('soundTheme')
+      db.getSetting('soundTheme'),
+      db.getAllTaxonomyNotes()
     ]);
 
     root.appendChild(ui.el('div', { class: 'page-header' }, [
       ui.el('div', null, [
         ui.el('h1', { class: 'page-title' }, 'Settings'),
-        ui.el('div', { class: 'page-sub' }, 'Roster, appearance, backup, review export, archive')
+        ui.el('div', { class: 'page-sub' }, 'Roster, appearance, taxonomy notes, backup, review export, archive')
       ])
     ]));
 
@@ -59,6 +60,12 @@
     root.appendChild(ui.el('div', { class: 'text-faint mb', style: { fontSize: '12px' } },
       'Manage the people you interact with. These names populate the Individual dropdown in the entry form.'));
     root.appendChild(renderRosterPanel(roster || {}, function () { render(root); }));
+
+    /* Taxonomy reference notes */
+    root.appendChild(ui.el('h2', { class: 'section-title' }, 'Taxonomy notes'));
+    root.appendChild(ui.el('div', { class: 'text-faint mb', style: { fontSize: '12px' } },
+      'Personal reference notes per taxonomy item — what it means to you, examples worth reaching for. Notes save when you click away and are included in full backups.'));
+    root.appendChild(renderTaxonomyNotesPanel(taxNotes || {}));
 
     /* Performance Review export */
     root.appendChild(ui.el('h2', { class: 'section-title' }, 'Performance review export'));
@@ -102,8 +109,12 @@
     var soundSelect = ui.el('select', {
       style: { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' },
       onchange: async function (e) {
-        await db.setSetting('soundTheme', e.target.value);
         if (rewards.playTheme) rewards.playTheme(e.target.value);
+        try {
+          await db.setSetting('soundTheme', e.target.value);
+        } catch (err) {
+          ui.toast('Storage error — sound theme not saved: ' + (err && err.message || 'unknown'), 'error');
+        }
       }
     }, themeKeys.map(function (k) {
       return ui.el('option', { value: k, selected: state.soundTheme === k }, themes[k].label);
@@ -144,8 +155,14 @@
     var packSelect = ui.el('select', {
       style: { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' },
       onchange: async function (e) {
-        await db.setSetting('themePack', e.target.value);
+        /* Apply immediately even if persistence fails — it works for the
+         * session; the toast tells the user the preference won't stick. */
         document.documentElement.setAttribute('data-theme-pack', e.target.value);
+        try {
+          await db.setSetting('themePack', e.target.value);
+        } catch (err) {
+          ui.toast('Storage error — theme not saved: ' + (err && err.message || 'unknown'), 'error');
+        }
       }
     }, THEME_PACKS.map(function (p) {
       return ui.el('option', { value: p.key, selected: state.themePack === p.key }, p.label);
@@ -160,8 +177,12 @@
     var modeSelect = ui.el('select', {
       style: { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' },
       onchange: async function (e) {
-        await db.setSetting('themeMode', e.target.value);
         document.documentElement.setAttribute('data-theme-mode', e.target.value);
+        try {
+          await db.setSetting('themeMode', e.target.value);
+        } catch (err) {
+          ui.toast('Storage error — mode not saved: ' + (err && err.message || 'unknown'), 'error');
+        }
       }
     }, THEME_MODES.map(function (m) {
       return ui.el('option', { value: m.key, selected: state.themeMode === m.key }, m.label);
@@ -187,11 +208,19 @@
       themePackRow,
       themeModeRow,
       toggle('Audio chime', 'Play a chime when saving an entry as complete', state.audio !== false, async function (on) {
-        await db.setSetting('audioEnabled', on);
+        try {
+          await db.setSetting('audioEnabled', on);
+        } catch (err) {
+          ui.toast('Storage error — setting not saved: ' + (err && err.message || 'unknown'), 'error');
+        }
       }),
       soundRow,
       toggle('Confetti', 'Show confetti animation when saving an entry as complete', state.confetti !== false, async function (on) {
-        await db.setSetting('confettiEnabled', on);
+        try {
+          await db.setSetting('confettiEnabled', on);
+        } catch (err) {
+          ui.toast('Storage error — setting not saved: ' + (err && err.message || 'unknown'), 'error');
+        }
       }),
       ui.el('div', { class: 'toggle-row' }, [
         ui.el('div', null, [
@@ -219,9 +248,15 @@
           listEl.appendChild(ui.el('div', { class: 'roster-item' }, [
             ui.el('span', { class: 'name' }, name),
             ui.el('button', { class: 'btn small danger', onclick: async function () {
-              people.splice(idx, 1);
+              var removed = people.splice(idx, 1);
               roster[cat.key] = people;
-              await db.setSetting('roster', roster);
+              try {
+                await db.setSetting('roster', roster);
+              } catch (err) {
+                people.splice(idx, 0, removed[0]); /* roll back so UI matches storage */
+                ui.toast('Storage error — roster not saved: ' + (err && err.message || 'unknown'), 'error');
+                return;
+              }
               rebuildList();
             } }, 'Remove')
           ]));
@@ -246,7 +281,13 @@
         people.push(name);
         people.sort();
         roster[cat.key] = people;
-        await db.setSetting('roster', roster);
+        try {
+          await db.setSetting('roster', roster);
+        } catch (err) {
+          people.splice(people.indexOf(name), 1); /* roll back; keep the typed name */
+          ui.toast('Storage error — roster not saved: ' + (err && err.message || 'unknown'), 'error');
+          return;
+        }
         addInput.value = '';
         rebuildList();
       }
@@ -259,6 +300,49 @@
           ui.el('button', { class: 'btn small', onclick: addPerson }, 'Add')
         ])
       ]));
+    });
+
+    return container;
+  }
+
+  /* ---------- Taxonomy notes ---------- */
+
+  /* One textarea per taxonomy item, grouped by taxonomy. Notes persist to
+   * the taxonomyNotes store under key '<taxKey>:<item>' (e.g.
+   * 'values:Security'); an emptied note deletes the record. Saves happen
+   * on blur so a half-typed note is never committed mid-thought. */
+  function renderTaxonomyNotesPanel(notes) {
+    var container = ui.el('div', { class: 'form' });
+
+    tax.TAXONOMY_KEYS.forEach(function (taxKey) {
+      var spec = tax.TAXONOMIES[taxKey];
+      var group = ui.el('div', { class: 'roster-group' }, [
+        ui.el('div', { class: 'group-heading' }, spec.label)
+      ]);
+
+      spec.items.forEach(function (item) {
+        var key = taxKey + ':' + item;
+        var area = ui.el('textarea', {
+          placeholder: 'Notes for "' + item + '"…',
+          style: { width: '100%', minHeight: '44px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px 10px', color: 'var(--text)', resize: 'vertical', fontFamily: 'inherit', fontSize: '13px' },
+          onblur: async function (e) {
+            var val = e.target.value.trim();
+            if ((notes[key] || '') === val) return;
+            try {
+              await db.setTaxonomyNote(key, val);
+              notes[key] = val;
+            } catch (err) {
+              ui.toast('Storage error — note not saved: ' + (err && err.message || 'unknown'), 'error');
+            }
+          }
+        }, notes[key] || '');
+        group.appendChild(ui.el('div', { style: { marginBottom: '10px' } }, [
+          ui.el('label', { style: { display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '4px' } }, item),
+          area
+        ]));
+      });
+
+      container.appendChild(group);
     });
 
     return container;
