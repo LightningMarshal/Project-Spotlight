@@ -693,6 +693,21 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
 .nav a:hover { color: var(--text); background: var(--surface); }
 .nav a.active { color: var(--accent); background: var(--surface-2); }
 
+/* Overdue follow-ups count pill on the Follow-Ups nav link */
+.nav-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--mono);
+  background: rgba(217, 85, 53, 0.15);
+  color: var(--impact-critical);
+  border: 1px solid rgba(217, 85, 53, 0.3);
+  vertical-align: 1px;
+}
+
 /* ========== Main layout ========== */
 .view {
   max-width: 1180px;
@@ -1502,4 +1517,46 @@ pre.code {
   .charts-grid, .pml-grid, .form-row-split, .form-row-triple { grid-template-columns: 1fr; }
   .topbar { flex-direction: column; gap: 10px; align-items: flex-start; }
   .view { padding: 20px 16px; }
+}
+
+/* ========== Print ==========
+ * Forces a light palette and strips interactive chrome so any view prints
+ * as a clean document. Specificity note: the theme pack/mode rules are
+ * 0-3-0 (`:root[data-theme-pack="…"][data-theme-mode="…"]`), so the token
+ * override below uses valueless attribute selectors to tie at 0-3-0 and
+ * wins on source order (end of file). A bare `:root` would silently lose.
+ * Known limitation: SVG charts resolve their colors at render time, so a
+ * dark-theme session prints charts with the on-screen palette.
+ */
+@media print {
+  :root,
+  :root[data-theme-pack][data-theme-mode],
+  :root[data-theme="light"] {
+    --bg:            #ffffff;
+    --bg-alt:        #ffffff;
+    --surface:       #ffffff;
+    --surface-2:     #f2f2f2;
+    --surface-3:     #e8e8e8;
+    --border:        #cccccc;
+    --border-strong: #999999;
+    --text:          #000000;
+    --text-dim:      #333333;
+    --text-faint:    #666666;
+    --accent:        #b06a0a;
+    --accent-dim:    #8f5608;
+    --accent-bg:     #f5ead8;
+    --bg-gradient:   none;
+    --shadow-card:   none;
+    --shadow-elev:   none;
+  }
+  body { background: #ffffff; }
+  .topbar, .filters, .quick-capture, .btn, .btn-row, .form-actions,
+  .dr-widget-toggle, #toast-root, #modal-root, .tagline {
+    display: none !important;
+  }
+  .view { max-width: none; padding: 0; }
+  .entry-card, .followup-card, .chart-card, .stat-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

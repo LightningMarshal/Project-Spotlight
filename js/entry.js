@@ -403,22 +403,41 @@
         tagGroup('principles')
       ]),
       ui.el('div', { class: 'form-actions' }, [
-        ui.el('div', null,
-          working.id ? ui.el('button', {
+        ui.el('div', { class: 'btn-row' }, working.id ? [
+          ui.el('button', {
+            class: 'btn small',
+            onclick: function () {
+              /* Duplicate what's on screen, including unsaved edits. Close
+               * via ui.closeModal() directly (like the save buttons) so the
+               * unsaved-changes guard doesn't fire — nothing is discarded,
+               * it's carried into the copy. */
+              var copy = JSON.parse(JSON.stringify(working));
+              delete copy.id;
+              delete copy.createdAt; /* fresh timestamps — normalizeEntry keeps createdAt when present */
+              delete copy.updatedAt;
+              copy.date = db.todayIso();
+              copy.status = 'draft';
+              copy.followUpDismissed = false;
+              ui.closeModal();
+              open(copy, { onChange: opts.onChange });
+            }
+          }, 'Duplicate'),
+          ui.el('button', {
             class: 'btn danger small',
             onclick: function () {
               ui.confirmDialog('Delete this entry? This cannot be undone.', async function () {
                 try {
                   await db.deleteEntry(working.id);
                   ui.toast('Entry deleted', 'warn');
+                  if (window.Uptrack.app) window.Uptrack.app.refreshNavBadge();
                   if (opts.onChange) opts.onChange();
                 } catch (err) {
                   ui.toast('Storage error — could not delete: ' + (err && err.message || 'unknown'), 'error');
                 }
               });
             }
-          }, 'Delete') : null
-        ),
+          }, 'Delete')
+        ] : null),
         ui.el('div', { class: 'btn-row' }, [
           ui.el('button', {
             class: 'btn subtle',
@@ -433,6 +452,7 @@
                 var saved = await db.saveEntry(working);
                 working.id = saved.id;
                 ui.toast('Draft saved');
+                if (window.Uptrack.app) window.Uptrack.app.refreshNavBadge();
                 if (opts.onChange) opts.onChange(saved);
                 ui.closeModal();
               } catch (err) {
@@ -452,6 +472,7 @@
                 working.id = saved.id;
                 ui.toast('Entry saved as complete');
                 if (window.Uptrack.rewards) window.Uptrack.rewards.fire();
+                if (window.Uptrack.app) window.Uptrack.app.refreshNavBadge();
                 if (opts.onChange) opts.onChange(saved);
                 ui.closeModal();
               } catch (err) {

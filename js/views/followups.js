@@ -13,6 +13,9 @@
 
   async function render(root) {
     ui.clear(root);
+    /* Dismiss/Reopen re-render this view without a hashchange — keep the
+     * overdue nav badge in sync. */
+    if (window.Uptrack.app) window.Uptrack.app.refreshNavBadge();
     var allEntries = await db.getAllEntries();
 
     root.appendChild(ui.el('div', { class: 'page-header' }, [
