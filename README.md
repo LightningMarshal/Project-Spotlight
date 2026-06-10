@@ -100,7 +100,6 @@ All data is persisted to IndexedDB in the browser under the database name
 - `entries` — daily impact entries (with domain-specific fields for People
   Management, Client Facing, and Project domains)
 - `peopleLogs` — monthly people-management reflections
-- `taxonomyNotes` — reference notes per taxonomy item
 - `settings` — roster, theme preference, reward toggles, `lastBackupAt`
 
 The data is tied to the browser profile and the directory you launched
@@ -165,8 +164,8 @@ Each entry belongs to one of four domains, with domain-specific fields:
 - **Follow-Ups** — dedicated tracker for open follow-up actions sorted by
   target date, with dismiss/reopen controls and dismissed toggle
 - **Settings** — roster management (direct/indirect/leadership), theme
-  toggle, audio/confetti toggles, taxonomy reference notes, performance
-  review export, archive, backup & restore
+  toggle, audio/confetti toggles, performance review export, archive,
+  backup & restore
 - **Stakeholder** — audience-focused filter + export workflow (accessible
   via `#/stakeholder`)
 
@@ -176,9 +175,9 @@ Each entry belongs to one of four domains, with domain-specific fields:
 - **Obsidian** — markdown with YAML frontmatter, structured headings, and
   hash tags (`#domain/*`, `#impact/*`, `#value/*`, `#tenet/*`, `#principle/*`)
 - **Performance review** — grouped by company value → culture tenet
-- **Full backup** — single JSON containing every entry, people log,
-  taxonomy note, and setting (roster, theme, reward toggles,
-  `lastBackupAt`). See [Data storage](#data-storage) for details.
+- **Full backup** — single JSON containing every entry, people log, and
+  setting (roster, theme, reward toggles, `lastBackupAt`). See
+  [Data storage](#data-storage) for details.
 
 ## Project layout
 
@@ -198,14 +197,13 @@ serve.py  (developer fallback only — see "Enterprise deployment" above)
 
 Uptrack stores 100% of its state in the browser's IndexedDB under the
 database name `uptrack`. There is no `localStorage`, no cookies, no
-`sessionStorage`, no network persistence, and no background sync. Four
+`sessionStorage`, no network persistence, and no background sync. Three
 object stores cover every piece of application state:
 
 | Store           | keyPath                | Contents                                                                                                      |
 | --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `entries`       | `id` (autoincrement)   | Daily impact entries — title, description, domain, impact, tags, and all per-domain fields (People Management, Client Facing, Project). Indexed by `date`, `status`, `domain`, `archived`. |
 | `peopleLogs`    | `month` (`'YYYY-MM'`)  | Monthly people-management reflection text, keyed by calendar month.                                           |
-| `taxonomyNotes` | `key` (`'tax:item'`)   | Free-text notes attached to individual values, tenets, or principles in the taxonomy.                         |
 | `settings`      | `key`                  | Roster (direct / indirect / leadership), theme pack, theme mode, sound theme, audio-chime toggle, confetti toggle, and `lastBackupAt`. |
 
 The full backup covers **every** object store. Backup format version 2
