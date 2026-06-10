@@ -5,6 +5,7 @@
   const ui  = window.Uptrack.ui;
   const db  = window.Uptrack.db;
   const tax = window.Uptrack.tax;
+  const charts = window.Uptrack.charts;
   const entryMod = window.Uptrack.entry;
 
   async function render(root) {
@@ -100,6 +101,17 @@
       recentSection.appendChild(ui.el('div', { class: 'empty' }, 'No entries in the last 7 days yet.'));
     }
     root.appendChild(recentSection);
+
+    /* Capture streak heatmap */
+    const streak = charts.captureStreak(allEntries);
+    root.appendChild(ui.el('div', { class: 'chart-card', style: { marginBottom: '22px' } }, [
+      ui.el('h4', null, 'Capture streak — last 13 weeks'),
+      ui.el('div', { class: 'text-faint', style: { fontSize: '12px', marginBottom: '10px' } },
+        streak > 0
+          ? 'Current streak: ' + streak + (streak === 1 ? ' day' : ' days')
+          : 'No current streak — capture something today to start one.'),
+      charts.calendarHeatmap(allEntries)
+    ]));
 
     /* Stats footer */
     const complete = allEntries.filter(function (e) { return e.status === 'complete'; });
