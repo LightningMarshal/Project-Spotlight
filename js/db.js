@@ -3,7 +3,6 @@
  * Object stores:
  *   entries        — daily impact entries, keyPath: id (autoIncrement)
  *   peopleLogs     — monthly people management logs, keyPath: month ('YYYY-MM')
- *   taxonomyNotes  — reference notes per taxonomy item, keyPath: key ('tax:item')
  *   settings       — misc single-value settings, keyPath: key
  */
 (function () {
@@ -35,9 +34,6 @@
         }
         if (!db.objectStoreNames.contains('peopleLogs')) {
           db.createObjectStore('peopleLogs', { keyPath: 'month' });
-        }
-        if (!db.objectStoreNames.contains('taxonomyNotes')) {
-          db.createObjectStore('taxonomyNotes', { keyPath: 'key' });
         }
         if (!db.objectStoreNames.contains('settings')) {
           db.createObjectStore('settings', { keyPath: 'key' });
@@ -212,25 +208,6 @@
     await wrap(t.objectStore('peopleLogs').delete(month));
   }
 
-  /* ---------- taxonomy notes ---------- */
-
-  async function setTaxonomyNote(key, note) {
-    const t = await tx(['taxonomyNotes'], 'readwrite');
-    if (!note) {
-      await wrap(t.objectStore('taxonomyNotes').delete(key));
-    } else {
-      await wrap(t.objectStore('taxonomyNotes').put({ key: key, note: note }));
-    }
-  }
-
-  async function getAllTaxonomyNotes() {
-    const t = await tx(['taxonomyNotes']);
-    const all = (await wrap(t.objectStore('taxonomyNotes').getAll())) || [];
-    const out = {};
-    for (const n of all) out[n.key] = n.note;
-    return out;
-  }
-
   /* ---------- generic settings ---------- */
 
   async function getSetting(key) {
@@ -282,15 +259,17 @@
   /* Backup format versions:
    *   1 — entries, peopleLogs, taxonomyNotes only (legacy)
    *   2 — adds settings (roster, theme prefs, reward toggles,
-   *       lastBackupAt) so every object store is covered
+   *       lastBackupAt) so every object store is covered.
+   *       As of v2.16.0 the `taxonomyNotes` key is no longer emitted
+   *       (feature removed); restore ignores it in older backups, so no
+   *       version bump is needed.
    */
   const BACKUP_VERSION = 2;
 
   async function exportAll() {
-    const [entries, logs, notes, settings] = await Promise.all([
+    const [entries, logs, settings] = await Promise.all([
       getAllEntries({ includeArchived: true }),
       getAllPeopleLogs(),
-      getAllTaxonomyNotes(),
       getAllSettings()
     ]);
     return {
@@ -299,7 +278,6 @@
       generatedAt: new Date().toISOString(),
       entries: entries,
       peopleLogs: logs,
-      taxonomyNotes: notes,
       settings: settings
     };
   }
@@ -313,24 +291,22 @@
       throw new Error('Unrecognized backup file.');
     }
     const hasSettings = payload.settings && typeof payload.settings === 'object';
-    const storeList = ['entries', 'peopleLogs', 'taxonomyNotes'];
+    /* A `taxonomyNotes` key in older backups is intentionally ignored —
+     * the feature (and its object store on fresh databases) was removed
+     * in v2.16.0. */
+    const storeList = ['entries', 'peopleLogs'];
     if (hasSettings) storeList.push('settings');
     const t = await tx(storeList, 'readwrite');
     const es = t.objectStore('entries');
     const ls = t.objectStore('peopleLogs');
-    const ns = t.objectStore('taxonomyNotes');
     await wrap(es.clear());
     await wrap(ls.clear());
-    await wrap(ns.clear());
     for (const e of payload.entries || []) {
       const rec = normalizeEntry(e);
       if (e.id) rec.id = e.id;
       await wrap(es.put(rec));
     }
     for (const l of payload.peopleLogs || []) { await wrap(ls.put(l)); }
-    for (const k of Object.keys(payload.taxonomyNotes || {})) {
-      await wrap(ns.put({ key: k, note: payload.taxonomyNotes[k] }));
-    }
     if (hasSettings) {
       const ss = t.objectStore('settings');
       await wrap(ss.clear());
@@ -347,7 +323,6 @@
     addEntry, updateEntry, saveEntry, getEntry, deleteEntry,
     getAllEntries, getDrafts, archiveEntry,
     savePeopleLog, getPeopleLog, getAllPeopleLogs, deletePeopleLog,
-    setTaxonomyNote, getAllTaxonomyNotes,
     getSetting, setSetting, getAllSettings, probePersistence,
     exportAll, restoreAll
   };

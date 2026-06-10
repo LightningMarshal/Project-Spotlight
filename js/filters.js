@@ -31,7 +31,9 @@
 
     if (f.search && f.search.trim()) {
       const q = f.search.trim().toLowerCase();
-      const hay = (entry.title + ' ' + (entry.description || '')).toLowerCase();
+      const hay = (entry.title + ' ' + (entry.description || '') + ' ' +
+        (entry.individual || '') + ' ' + (entry.companyName || '') + ' ' +
+        (entry.followUpAction || '')).toLowerCase();
       if (hay.indexOf(q) === -1) return false;
     }
 
@@ -101,7 +103,7 @@
 
     const searchInput = ui.el('input', {
       type: 'text',
-      placeholder: 'Search titles and descriptions…',
+      placeholder: 'Search titles, descriptions, people, companies…',
       value: state.search || '',
       oninput: function (e) { state.search = e.target.value; emit(); }
     });

@@ -47,7 +47,7 @@ On boot, `app.js` opens the DB and runs `db.probePersistence()` — a round-trip
 
 ### Data model
 
-Four object stores in `js/db.js` (DB_VERSION 1): `entries` (autoincrement id, indexed by date/status/domain/archived), `peopleLogs` (keyed `'YYYY-MM'`), `taxonomyNotes` (keyed `'tax:item'`), `settings` (key/value).
+Three object stores in `js/db.js` (DB_VERSION 1): `entries` (autoincrement id, indexed by date/status/domain/archived), `peopleLogs` (keyed `'YYYY-MM'`), `settings` (key/value). (A legacy `taxonomyNotes` store may exist in older databases; it is unused and ignored.)
 
 `normalizeEntry()` in db.js is the **single source of truth for the entry schema**. Adding an entry field means updating, in lockstep: `normalizeEntry` (db.js), `newEntryTemplate` (entry.js), the form in entry.js, and any exports in export.js that should emit it.
 

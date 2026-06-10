@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.15.0**
+**v2.16.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -100,7 +100,6 @@ All data is persisted to IndexedDB in the browser under the database name
 - `entries` — daily impact entries (with domain-specific fields for People
   Management, Client Facing, and Project domains)
 - `peopleLogs` — monthly people-management reflections
-- `taxonomyNotes` — reference notes per taxonomy item
 - `settings` — roster, theme preference, reward toggles, `lastBackupAt`
 
 The data is tied to the browser profile and the directory you launched
@@ -127,7 +126,15 @@ of truth.
 | Key               | Action                                  |
 | ----------------- | --------------------------------------- |
 | `/`               | Focus the quick-capture field           |
-| `Ctrl/Cmd + N`    | Open the full entry form                |
+| `Alt + N`         | Open the full entry form                |
+| `Alt + T`         | Go to Today                             |
+| `Alt + W`         | Go to Weekly                            |
+| `Alt + M`         | Go to Monthly                           |
+| `Alt + A`         | Go to Annual                            |
+| `Alt + D`         | Go to Data Review                       |
+| `Alt + F`         | Go to Follow-Ups                        |
+| `Alt + S`         | Go to Settings                          |
+| `?`               | Shortcut help overlay                   |
 | `Esc`             | Close modal                             |
 
 ## Taxonomies
@@ -165,8 +172,8 @@ Each entry belongs to one of four domains, with domain-specific fields:
 - **Follow-Ups** — dedicated tracker for open follow-up actions sorted by
   target date, with dismiss/reopen controls and dismissed toggle
 - **Settings** — roster management (direct/indirect/leadership), theme
-  toggle, audio/confetti toggles, taxonomy reference notes, performance
-  review export, archive, backup & restore
+  toggle, audio/confetti toggles, performance review export, archive,
+  backup & restore
 - **Stakeholder** — audience-focused filter + export workflow (accessible
   via `#/stakeholder`)
 
@@ -176,9 +183,9 @@ Each entry belongs to one of four domains, with domain-specific fields:
 - **Obsidian** — markdown with YAML frontmatter, structured headings, and
   hash tags (`#domain/*`, `#impact/*`, `#value/*`, `#tenet/*`, `#principle/*`)
 - **Performance review** — grouped by company value → culture tenet
-- **Full backup** — single JSON containing every entry, people log,
-  taxonomy note, and setting (roster, theme, reward toggles,
-  `lastBackupAt`). See [Data storage](#data-storage) for details.
+- **Full backup** — single JSON containing every entry, people log, and
+  setting (roster, theme, reward toggles, `lastBackupAt`). See
+  [Data storage](#data-storage) for details.
 
 ## Project layout
 
@@ -198,14 +205,13 @@ serve.py  (developer fallback only — see "Enterprise deployment" above)
 
 Uptrack stores 100% of its state in the browser's IndexedDB under the
 database name `uptrack`. There is no `localStorage`, no cookies, no
-`sessionStorage`, no network persistence, and no background sync. Four
+`sessionStorage`, no network persistence, and no background sync. Three
 object stores cover every piece of application state:
 
 | Store           | keyPath                | Contents                                                                                                      |
 | --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `entries`       | `id` (autoincrement)   | Daily impact entries — title, description, domain, impact, tags, and all per-domain fields (People Management, Client Facing, Project). Indexed by `date`, `status`, `domain`, `archived`. |
 | `peopleLogs`    | `month` (`'YYYY-MM'`)  | Monthly people-management reflection text, keyed by calendar month.                                           |
-| `taxonomyNotes` | `key` (`'tax:item'`)   | Free-text notes attached to individual values, tenets, or principles in the taxonomy.                         |
 | `settings`      | `key`                  | Roster (direct / indirect / leadership), theme pack, theme mode, sound theme, audio-chime toggle, confetti toggle, and `lastBackupAt`. |
 
 The full backup covers **every** object store. Backup format version 2
@@ -222,6 +228,49 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.16.0
+- **Taxonomy notes removed end-to-end.** The notes feature had been
+  deliberately removed from the product; the v2.15.0 UI restored it by
+  mistake. This release removes the Settings section, the db API
+  (`setTaxonomyNote` / `getAllTaxonomyNotes`), and the `taxonomyNotes`
+  key from full backups. `BACKUP_VERSION` stays 2 — older backups
+  containing the key restore cleanly (it is simply ignored), and fresh
+  databases no longer create the store.
+- **CSV export covers every field.** `generalCsv` now emits the 15
+  domain-specific columns (interaction type, meeting direction,
+  individual, sentiment, development theme, the four follow-up fields,
+  company, customer sentiment, escalation number/URL, project
+  number/URL) plus `archived` — 28 columns total. "Other" enum
+  selections emit the custom label. Note: the core column order is
+  unchanged, but anything keyed by column *index* past column 10
+  (`principles`) shifts; `createdAt`/`updatedAt` are now last.
+- **Capture-streak heatmap on Today.** A GitHub-style grid of the
+  trailing 13 weeks (Monday–Sunday columns) shows per-day capture
+  intensity, with a consecutive-day streak readout. Counts key off the
+  entry `date`, so backfilled work lights the day it happened; a
+  not-yet-logged today doesn't break the streak.
+- **Overdue follow-ups nav badge.** The Follow-Ups nav link shows a
+  count of open follow-ups past their target date. It refreshes on
+  every navigation, after dismiss/reopen in the Follow-Ups view, and
+  after entry saves/deletes.
+- **Duplicate entry.** Editing an entry now offers a Duplicate button
+  that opens a fresh draft copy (dated today, follow-up not dismissed)
+  prefilled with everything on screen — including unsaved edits — for
+  recurring work like 1:1s.
+- **People search.** The filter search box now also matches the
+  Individual, Company Name, and Follow-Up Action fields, so "everything
+  about Alice" is a one-box query.
+- **Print stylesheet.** Printing any view now forces a light palette,
+  hides navigation/filters/buttons, and keeps cards intact across page
+  breaks. Known limitation: SVG charts bake theme colors at render
+  time, so a dark-theme session prints charts with on-screen colors.
+- **`Alt+N` replaces `Ctrl/Cmd+N` for "new full entry".** Browsers
+  reserve Ctrl+N for "new window" and never deliver it to the page, so
+  the old binding silently did nothing. Alt+N joins the existing
+  Alt-key navigation family and is guarded against firing while a
+  modal is open.
+- **"Last 7 days" on Today no longer includes future-dated entries.**
 
 ### v2.15.0
 - **Taxonomy notes UI.** The `taxonomyNotes` object store has had a full

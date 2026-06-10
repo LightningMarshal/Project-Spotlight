@@ -508,6 +508,103 @@
     return svg({ viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMidYMid meet' }, children);
   }
 
+  /* ---------- calendar heatmap ----------
+   * GitHub-style capture grid: trailing N weeks (default 13) as columns,
+   * Monday–Sunday rows (matching ui.startOfWeek), one cell per day, with
+   * intensity = number of entries dated that day. Counts key off the raw
+   * entry `date` string, so backfilled work lights up the day it happened.
+   * Days after today are not drawn. Dates are handled exclusively with the
+   * local-time ui helpers — never `new Date('YYYY-MM-DD')`, which parses
+   * as UTC and shifts days in western timezones.
+   */
+  function calendarHeatmap(entries, opts) {
+    opts = opts || {};
+    const C = colors();
+    const accent = cssVar('--accent', '#e8923e');
+    const WEEKS = opts.weeks || 13;
+    const cell = 14, gap = 3;
+    const padL = 30, padT = 16, padR = 4, padB = 4;
+    const W = padL + WEEKS * (cell + gap) - gap + padR;
+    const H = padT + 7 * (cell + gap) - gap + padB;
+
+    const counts = {};
+    (entries || []).forEach(function (e) {
+      if (e.date) counts[e.date] = (counts[e.date] || 0) + 1;
+    });
+
+    const todayD = ui.today();
+    const gridStart = ui.startOfWeek(todayD);
+    gridStart.setDate(gridStart.getDate() - (WEEKS - 1) * 7);
+
+    const children = [];
+
+    /* Row labels (Mon / Wed / Fri) */
+    const rowLabels = { 0: 'Mon', 2: 'Wed', 4: 'Fri' };
+    [0, 2, 4].forEach(function (r) {
+      children.push(sn('text', {
+        x: padL - 6,
+        y: padT + r * (cell + gap) + cell / 2 + 3,
+        'text-anchor': 'end',
+        fill: C.label,
+        'font-size': 9
+      }, rowLabels[r]));
+    });
+
+    let lastMonth = -1;
+    for (let w = 0; w < WEEKS; w++) {
+      const weekMonday = new Date(gridStart);
+      weekMonday.setDate(gridStart.getDate() + w * 7);
+
+      /* Month label above the first column whose Monday enters a new month */
+      if (weekMonday.getMonth() !== lastMonth) {
+        lastMonth = weekMonday.getMonth();
+        children.push(sn('text', {
+          x: padL + w * (cell + gap),
+          y: padT - 5,
+          fill: C.label,
+          'font-size': 9
+        }, weekMonday.toLocaleDateString(undefined, { month: 'short' })));
+      }
+
+      for (let r = 0; r < 7; r++) {
+        const day = new Date(weekMonday);
+        day.setDate(weekMonday.getDate() + r);
+        if (day > todayD) continue;
+        const iso = ui.toIso(day);
+        const n = counts[iso] || 0;
+        children.push(sn('rect', {
+          x: padL + w * (cell + gap),
+          y: padT + r * (cell + gap),
+          width: cell,
+          height: cell,
+          rx: 2,
+          fill: n === 0 ? C.trackBg : accent,
+          opacity: n === 0 ? 1 : (n === 1 ? 0.35 : (n === 2 ? 0.65 : 1))
+        }, sn('title', null, iso + ' — ' + n + (n === 1 ? ' entry' : ' entries'))));
+      }
+    }
+
+    return svg({ viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMidYMid meet' }, children);
+  }
+
+  /* Current consecutive-day capture streak, by entry date. A day counts if
+   * at least one entry is dated that day. Today not having an entry yet
+   * does not break the streak — the count then starts from yesterday. */
+  function captureStreak(entries) {
+    const counts = {};
+    (entries || []).forEach(function (e) {
+      if (e.date) counts[e.date] = (counts[e.date] || 0) + 1;
+    });
+    const d = ui.today();
+    if (!counts[ui.toIso(d)]) d.setDate(d.getDate() - 1);
+    let streak = 0;
+    while (counts[ui.toIso(d)]) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
   /* ---------- data aggregators ---------- */
 
   function byDomain(entries) {
@@ -672,9 +769,10 @@
   window.Uptrack.charts = {
     /* primitives */
     barChart, horizontalBarChart, lineChart, stackedBarChart, groupedBarChart, gapIndicator,
+    calendarHeatmap,
     /* aggregators */
     byDomain, byImpact, tagFrequency, impactByDomain, volumeOverTime,
-    domainByMonth, impactQualityByMonth, gapData, visibilityIndex,
+    domainByMonth, impactQualityByMonth, gapData, visibilityIndex, captureStreak,
     /* theme */
     colors,
     /* empty state helper (exposed for widgets that build their own DOM) */

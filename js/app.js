@@ -31,6 +31,7 @@
       a.classList.toggle('active', a.getAttribute('data-route') === name);
     });
     document.title = 'Uptrack — ' + routes[name].title;
+    updateFollowupsBadge();
     try {
       await routes[name].render(root);
       window.scrollTo(0, 0);
@@ -39,6 +40,36 @@
       window.Uptrack.ui.clear(root);
       root.appendChild(window.Uptrack.ui.el('div', { class: 'empty' }, 'Something went wrong: ' + err.message));
     }
+  }
+
+  /* Overdue-follow-ups count on the Follow-Ups nav link. Runs on every
+   * navigation; views and the entry form also call it (via
+   * Uptrack.app.refreshNavBadge) after mutations that can change the
+   * count without a hashchange. Purely cosmetic — storage errors are
+   * swallowed rather than toasted. */
+  async function updateFollowupsBadge() {
+    try {
+      const db = window.Uptrack.db;
+      const entries = await db.getAllEntries();
+      const todayIso = db.todayIso();
+      const count = entries.filter(function (e) {
+        return e.followUpAction && !e.followUpDismissed &&
+          e.followUpTargetDate && e.followUpTargetDate < todayIso;
+      }).length;
+      const link = document.querySelector('.nav a[data-route="followups"]');
+      if (!link) return;
+      let badge = link.querySelector('.nav-badge');
+      if (!count) {
+        if (badge) badge.parentNode.removeChild(badge);
+        return;
+      }
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'nav-badge';
+        link.appendChild(badge);
+      }
+      badge.textContent = count;
+    } catch (err) { /* cosmetic — never block or toast */ }
   }
 
   function renderStorageFailureBanner(message, detail) {
@@ -115,21 +146,25 @@
       var inInput = (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT');
       var modalOpen = document.getElementById('modal-root').hasChildNodes();
 
-      /* Alt+letter — view navigation (works even in inputs) */
+      /* Alt+letter — view navigation and new entry (works even in inputs).
+       * Alt+N replaces the old Ctrl/Cmd+N binding: browsers reserve Ctrl+N
+       * for "new window" and never deliver it to the page. */
       if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        if (e.key.toLowerCase() === 'n') {
+          /* Never open over an existing modal — openModal clears the modal
+           * root, which would destroy an in-progress entry form and bypass
+           * its unsaved-changes guard. */
+          if (modalOpen) return;
+          e.preventDefault();
+          window.Uptrack.entry.open(null, { onChange: router });
+          return;
+        }
         var target = NAV_KEYS[e.key.toLowerCase()];
         if (target) {
           e.preventDefault();
           window.location.hash = target;
           return;
         }
-      }
-
-      /* Ctrl/Cmd+N — new full entry */
-      if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        window.Uptrack.entry.open(null, { onChange: router });
-        return;
       }
 
       if (inInput || modalOpen) return;
@@ -160,7 +195,7 @@
     var ui = window.Uptrack.ui;
     var shortcuts = [
       ['/', 'Focus quick capture / go to Today'],
-      ['Ctrl+N', 'New full entry'],
+      ['Alt+N', 'New full entry'],
       ['Alt+T', 'Today'],
       ['Alt+W', 'Weekly'],
       ['Alt+M', 'Monthly'],
@@ -179,6 +214,9 @@
     var body = ui.el('div', { style: { maxWidth: '360px' } }, rows);
     ui.openModal('Keyboard shortcuts', body);
   }
+
+  window.Uptrack = window.Uptrack || {};
+  window.Uptrack.app = { refreshNavBadge: updateFollowupsBadge };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
