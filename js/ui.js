@@ -32,6 +32,47 @@
 
   function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
 
+  /* ---------- inline SVG icons ----------
+   * Hand-rolled 24×24 stroke icons, same zero-asset approach as the
+   * charts: no icon fonts, no external files, CSP-safe. Each icon is a
+   * list of path `d` strings drawn with currentColor strokes.
+   */
+  const ICON_PATHS = {
+    home:            ['M3 10.75 12 4l9 6.75', 'M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5'],
+    calendar:        ['M4.5 5.5h15a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-13a1 1 0 0 1 1-1z', 'M3.5 9.5h17', 'M8 3v4', 'M16 3v4', 'M8 13.5h.01', 'M12 13.5h.01', 'M16 13.5h.01', 'M8 17h.01', 'M12 17h.01'],
+    'calendar-week': ['M4.5 5.5h15a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-13a1 1 0 0 1 1-1z', 'M3.5 9.5h17', 'M8 3v4', 'M16 3v4', 'M7.5 14h9'],
+    'trending-up':   ['M3 17l6-6 4 4 8-8', 'M14.5 7H21v6.5'],
+    'bar-chart':     ['M5 20v-9', 'M12 20V5', 'M19 20v-5'],
+    'check-circle':  ['M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z', 'M8.5 12.2l2.4 2.4 4.8-5'],
+    sliders:         ['M4 21v-7', 'M4 10V3', 'M12 21v-9', 'M12 8V3', 'M20 21v-5', 'M20 12V3', 'M2 14h4', 'M10 8h4', 'M18 16h4'],
+    plus:            ['M12 5v14', 'M5 12h14'],
+    search:          ['M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 'M16.2 16.2 21 21'],
+    copy:            ['M9.5 9.5h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-10a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z', 'M5.5 15h-1a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1H14a1 1 0 0 1 1 1v1']
+  };
+
+  function icon(name, size) {
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const paths = ICON_PATHS[name];
+    if (!paths) return document.createTextNode('');
+    const s = document.createElementNS(SVG_NS, 'svg');
+    s.setAttribute('viewBox', '0 0 24 24');
+    s.setAttribute('class', 'icon icon-' + name);
+    s.setAttribute('width', size || 15);
+    s.setAttribute('height', size || 15);
+    s.setAttribute('fill', 'none');
+    s.setAttribute('stroke', 'currentColor');
+    s.setAttribute('stroke-width', '2');
+    s.setAttribute('stroke-linecap', 'round');
+    s.setAttribute('stroke-linejoin', 'round');
+    s.setAttribute('aria-hidden', 'true');
+    for (const d of paths) {
+      const p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('d', d);
+      s.appendChild(p);
+    }
+    return s;
+  }
+
   /* ---------- dates ---------- */
 
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -242,7 +283,7 @@
 
   window.Uptrack = window.Uptrack || {};
   window.Uptrack.ui = {
-    el, clear,
+    el, clear, icon,
     toIso, parseIso, today, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear,
     monthKey, monthLabel, shortDate, longDate, relativeDay, pad,
     openModal, closeModal, toast, confirmDialog,

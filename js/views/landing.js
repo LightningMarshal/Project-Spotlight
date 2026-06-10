@@ -26,7 +26,7 @@
       ui.el('div', { class: 'btn-row' }, [
         ui.el('button', { class: 'btn primary', onclick: function () {
           entryMod.open(null, { onChange: function () { render(root); } });
-        } }, 'New full entry')
+        } }, [ui.icon('plus'), 'New full entry'])
       ])
     ]);
     root.appendChild(header);
@@ -50,7 +50,10 @@
     const qc = ui.el('div', { class: 'quick-capture' }, [
       ui.el('label', null, 'Quick capture'),
       ui.el('div', { class: 'quick-capture-row' }, [
-        input,
+        ui.el('div', { class: 'qc-input-wrap' }, [
+          input,
+          ui.el('span', { class: 'qc-kbd', 'aria-hidden': 'true' }, '/')
+        ]),
         ui.el('button', { class: 'btn', onclick: async function () {
           if (!input.value.trim()) { input.focus(); return; }
           const saved = await entryMod.quickCreate(input.value);

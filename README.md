@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.18.0**
+**v2.19.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -126,6 +126,7 @@ of truth.
 | Key               | Action                                  |
 | ----------------- | --------------------------------------- |
 | `/`               | Focus the quick-capture field           |
+| `Ctrl/Cmd + K`    | Command palette (views, actions, entry search) |
 | `Alt + N`         | Open the full entry form                |
 | `Alt + T`         | Go to Today                             |
 | `Alt + W`         | Go to Weekly                            |
@@ -194,7 +195,7 @@ index.html
 css/styles.css
 js/taxonomies.js    js/db.js          js/ui.js
 js/filters.js       js/entry.js       js/charts.js      js/export.js
-js/rewards.js       js/app.js
+js/rewards.js       js/palette.js     js/app.js
 js/views/landing.js    js/views/weekly.js    js/views/monthly.js
 js/views/annual.js     js/views/stakeholder.js   js/views/datareview.js
 js/views/followups.js  js/views/settings.js
@@ -228,6 +229,21 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.19.0
+- **Command palette (`Ctrl/Cmd+K`).** Jump to any view (including the
+  unlisted Stakeholder view), run actions (new entry, download backup),
+  or find an entry by title, person, or company — arrows + Enter,
+  Escape closes. New module `js/palette.js`.
+- **Inline SVG icon set.** Hand-rolled 24×24 stroke icons (same
+  zero-asset approach as the charts) decorate the nav links, the
+  new-entry button, and the palette. New `ui.icon(name)` helper.
+- **Entry form layout.** The domain picker is a fixed 2×2 grid (no more
+  orphaned "Client Facing" row), and the Date field moved up beside
+  Impact instead of sitting below the tags.
+- **Quick capture as the hero.** Larger input with an accent focus
+  glow, an accent top border on the card, and a `/` shortcut hint
+  rendered inside the field that disappears on focus/typing.
 
 ### v2.18.0
 - **Type hierarchy.** Page titles grew to 26px; section and group

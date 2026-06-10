@@ -35,6 +35,7 @@ There are no ES modules. Every file is an IIFE that attaches its exports to the 
 - `Uptrack.entry` (entry.js) — entry create/edit modal form
 - `Uptrack.rewards` (rewards.js) — audio chime + confetti on save-as-complete
 - `Uptrack.export` (export.js) — text/CSV/Obsidian/performance-review exports, full backup, backup-nag banner
+- `Uptrack.palette` (palette.js) — Ctrl/Cmd+K command palette (views, actions, entry search)
 - `Uptrack.views.<name>` (js/views/*.js) — one render function per view
 
 **Script load order in `index.html` is the dependency graph.** Foundation scripts load before views, `app.js` loads last. A new file must be added as a `<script>` tag in the right position.
