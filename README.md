@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.14.2**
+**v2.15.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -165,8 +165,8 @@ Each entry belongs to one of four domains, with domain-specific fields:
 - **Follow-Ups** — dedicated tracker for open follow-up actions sorted by
   target date, with dismiss/reopen controls and dismissed toggle
 - **Settings** — roster management (direct/indirect/leadership), theme
-  toggle, audio/confetti toggles, performance review export, archive,
-  backup & restore
+  toggle, audio/confetti toggles, taxonomy reference notes, performance
+  review export, archive, backup & restore
 - **Stakeholder** — audience-focused filter + export workflow (accessible
   via `#/stakeholder`)
 
@@ -222,6 +222,21 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.15.0
+- **Taxonomy notes UI.** The `taxonomyNotes` object store has had a full
+  persistence API, backup/restore coverage, and a README mention since
+  v1 — but no way to actually write a note. Settings now has a
+  "Taxonomy notes" section with one textarea per taxonomy item (keyed
+  `<taxonomy>:<item>`, e.g. `values:Security`). Notes save on blur, an
+  emptied note deletes the record, and storage failures surface as
+  error toasts.
+- **Removed dead `ui.escapeHtml` helper.** Exported but never called —
+  all DOM is built via `ui.el`, which uses `textContent` for user data.
+- **Documented the unused `entries` indexes.** `by_date` / `by_status` /
+  `by_domain` / `by_archived` are never queried (all reads are
+  `getAll()` + in-memory filtering); a comment in `db.js` now records
+  that they are kept only to avoid a pointless `DB_VERSION` bump.
 
 ### v2.14.2
 - **Fix: CSV formula-injection guard could be bypassed.** `csvEscape`

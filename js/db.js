@@ -24,6 +24,10 @@
         const db = e.target.result;
         if (!db.objectStoreNames.contains('entries')) {
           const s = db.createObjectStore('entries', { keyPath: 'id', autoIncrement: true });
+          /* These indexes are currently unused — every read path does
+           * getAll() plus in-memory filtering, which is fine at
+           * personal-tracker scale. They are kept because dropping them
+           * would force a DB_VERSION bump for zero user-visible benefit. */
           s.createIndex('by_date', 'date');
           s.createIndex('by_status', 'status');
           s.createIndex('by_domain', 'domain');

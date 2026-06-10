@@ -32,16 +32,6 @@
 
   function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
 
-  function escapeHtml(s) {
-    if (s == null) return '';
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
   /* ---------- dates ---------- */
 
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -237,7 +227,7 @@
 
   window.Uptrack = window.Uptrack || {};
   window.Uptrack.ui = {
-    el, clear, escapeHtml,
+    el, clear,
     toIso, parseIso, today, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear,
     monthKey, monthLabel, shortDate, longDate, relativeDay, pad,
     openModal, closeModal, toast, confirmDialog,
