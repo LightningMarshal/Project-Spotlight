@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.14.1**
+**v2.14.2**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -222,6 +222,44 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.14.2
+- **Fix: CSV formula-injection guard could be bypassed.** `csvEscape`
+  quoted the value first and tested for a formula prefix second, so a
+  cell starting with `=`, `+`, `-`, `@`, or tab that *also* contained a
+  comma, quote, or newline (e.g. `=HYPERLINK("…"),x`) was quoted but
+  never neutralized — Excel would unquote it and execute the formula.
+  The prefix is now neutralized on the raw value before quoting, and a
+  lone `\r` now also triggers quoting.
+- **Fix: People Management month header shifted a month in western
+  timezones.** `new Date('YYYY-MM-01')` parses as UTC midnight, which
+  is the last day of the *previous* month in any negative UTC offset.
+  Now parsed with the local-time `parseIso` helper.
+- **Fix: quick capture lost the typed title on storage failure.** The
+  input was cleared unconditionally after the save attempt; it is now
+  cleared only when the draft actually saved.
+- **Fix: switching an entry's domain carried stale domain-specific
+  fields.** Changing People Management → Project (etc.) silently kept
+  the old interaction type, sentiment, individual, follow-up, and
+  similar fields, which then leaked into Obsidian exports, the
+  Follow-Ups view, and the visibility index. `normalizeEntry` now
+  persists each domain-specific field only for the domain it belongs
+  to, and the entry form drops an interaction type that isn't valid
+  for the newly selected domain.
+- **Fix: silent storage failures in Settings and the backup nag.**
+  Roster add/remove, theme pack/mode, sound theme, and the audio /
+  confetti toggles awaited `setSetting` with no error handling; the
+  backup-nag button likewise had no catch around the backup itself.
+  All now surface error toasts (roster changes also roll back the
+  in-memory list so the UI matches storage).
+- **Fix: modal Escape listeners accumulated.** The document-level
+  keydown listener was only removed when Escape itself closed the
+  modal; closing via the × button or backdrop leaked one listener per
+  modal opened. `closeModal` now always detaches it.
+- **Unsaved-changes guard on the entry form.** Dismissing the entry
+  modal (Cancel, ×, backdrop click, Escape) with unsaved edits now
+  asks for confirmation instead of silently discarding them, via a new
+  `beforeClose` hook on `ui.openModal`.
 
 ### v2.14.1
 - **Fix: Roster input invisible in dark mode (Issue #2).** The "Add a

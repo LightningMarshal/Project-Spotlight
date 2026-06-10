@@ -114,29 +114,50 @@
 
   /* ---------- modal ---------- */
 
+  /* The active modal's Escape handler. Tracked module-wide so closeModal()
+   * can always detach it — previously the listener was only removed when
+   * Escape itself closed the modal, so closing via the × button or backdrop
+   * leaked one document-level listener per modal opened. */
+  let _modalKeyHandler = null;
+
+  /* opts:
+   *   persistent  — backdrop click / Escape do not close the modal
+   *   beforeClose — called before any dismissal (×, backdrop, Escape);
+   *                 return false to keep the modal open. Direct calls to
+   *                 closeModal() (e.g. after a successful save) bypass it.
+   */
   function openModal(title, bodyNode, opts) {
     opts = opts || {};
     const root = document.getElementById('modal-root');
     clear(root);
+    if (_modalKeyHandler) {
+      document.removeEventListener('keydown', _modalKeyHandler);
+      _modalKeyHandler = null;
+    }
+
+    function requestClose() {
+      if (opts.beforeClose && !opts.beforeClose()) return;
+      closeModal();
+    }
 
     const modal = el('div', { class: 'modal' }, [
       el('div', { class: 'modal-header' }, [
         el('h3', null, title),
-        el('button', { class: 'modal-close', title: 'Close', onclick: closeModal }, '×')
+        el('button', { class: 'modal-close', title: 'Close', onclick: requestClose }, '×')
       ]),
       el('div', { class: 'modal-body' }, bodyNode)
     ]);
     const backdrop = el('div', {
       class: 'modal-backdrop',
-      onclick: function (e) { if (e.target === backdrop && !opts.persistent) closeModal(); }
+      onclick: function (e) { if (e.target === backdrop && !opts.persistent) requestClose(); }
     }, modal);
 
     root.appendChild(backdrop);
     document.body.style.overflow = 'hidden';
-    const onKey = function (e) {
-      if (e.key === 'Escape' && !opts.persistent) { closeModal(); document.removeEventListener('keydown', onKey); }
+    _modalKeyHandler = function (e) {
+      if (e.key === 'Escape' && !opts.persistent) requestClose();
     };
-    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', _modalKeyHandler);
     return { modal: modal, backdrop: backdrop };
   }
 
@@ -144,6 +165,10 @@
     const root = document.getElementById('modal-root');
     clear(root);
     document.body.style.overflow = '';
+    if (_modalKeyHandler) {
+      document.removeEventListener('keydown', _modalKeyHandler);
+      _modalKeyHandler = null;
+    }
   }
 
   /* ---------- toast ---------- */

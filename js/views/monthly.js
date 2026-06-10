@@ -139,7 +139,7 @@
     });
 
     var container = ui.el('div', { class: 'pml' });
-    container.appendChild(ui.el('h3', null, 'People Management — ' + ui.monthLabel(new Date(monthK + '-01'))));
+    container.appendChild(ui.el('h3', null, 'People Management — ' + ui.monthLabel(ui.parseIso(monthK + '-01'))));
     container.appendChild(ui.el('div', { class: 'pml-sub' }, 'Auto-aggregated from ' + pmEntries.length + ' People Management entries this month.'));
 
     if (!pmEntries.length) {

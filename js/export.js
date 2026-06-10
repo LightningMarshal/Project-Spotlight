@@ -111,13 +111,15 @@
   function csvEscape(s) {
     if (s == null) return '';
     var str = String(s);
-    if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1) {
-      str = '"' + str.replace(/"/g, '""') + '"';
+    /* Neutralize spreadsheet formula prefixes on the RAW value, before any
+     * quoting. Quoting first hides the prefix from this test (the string
+     * then starts with `"`), so a value like `=HYPERLINK(...),x` would
+     * reach the spreadsheet as a live formula. */
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = "'" + str;
     }
-    if (/^[=+\-@\t]/.test(str)) {
-      str = str.charAt(0) === '"'
-        ? '"' + "'" + str.slice(1)
-        : '"' + "'" + str + '"';
+    if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1 || str.indexOf('\r') !== -1) {
+      str = '"' + str.replace(/"/g, '""') + '"';
     }
     return str;
   }
@@ -442,10 +444,14 @@
       ]),
       ui.el('div', { class: 'text-dim', style: { fontSize: '13px', marginBottom: '14px' } }, message),
       ui.el('button', { class: 'btn primary', onclick: async function () {
-        await runFullBackup();
-        await db.setSetting('lastBackupAt', new Date().toISOString());
-        ui.toast('Backup downloaded');
-        onBackupDone();
+        try {
+          await runFullBackup();
+          await db.setSetting('lastBackupAt', new Date().toISOString());
+          ui.toast('Backup downloaded');
+          onBackupDone();
+        } catch (err) {
+          ui.toast('Backup failed: ' + (err && err.message || 'unknown'), 'error');
+        }
       } }, 'Download backup now')
     ]);
   }

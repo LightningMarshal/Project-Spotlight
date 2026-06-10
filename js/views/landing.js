@@ -41,8 +41,8 @@
       onkeydown: async function (e) {
         if (e.key === 'Enter' && input.value.trim()) {
           const saved = await entryMod.quickCreate(input.value);
-          input.value = '';
-          if (saved) render(root);
+          /* Keep the typed title on storage failure so nothing is lost. */
+          if (saved) { input.value = ''; render(root); }
         }
       }
     });
@@ -53,8 +53,7 @@
         ui.el('button', { class: 'btn', onclick: async function () {
           if (!input.value.trim()) { input.focus(); return; }
           const saved = await entryMod.quickCreate(input.value);
-          input.value = '';
-          if (saved) render(root);
+          if (saved) { input.value = ''; render(root); }
         } }, 'Save draft'),
         ui.el('button', { class: 'btn primary', onclick: function () {
           entryMod.open({ title: input.value || '' }, { onChange: function () { input.value = ''; render(root); } });

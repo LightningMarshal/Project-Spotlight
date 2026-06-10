@@ -63,12 +63,22 @@
 
   function normalizeEntry(e) {
     const now = new Date().toISOString();
+    const domain = e.domain || '';
+    /* Domain-specific fields only persist for the domain they belong to.
+     * Switching an entry's domain in the form must not carry stale values
+     * (e.g. a People Management sentiment on a Project entry) into exports,
+     * aggregations, or the visibility index. The form only exposes these
+     * fields once a domain is selected, so clearing on mismatch never
+     * discards anything the user could currently see or edit. */
+    const isPeople  = domain === 'People Management';
+    const isClient  = domain === 'Client Facing';
+    const isProject = domain === 'Project';
     return {
       id: e.id,
       title: (e.title || '').trim(),
       description: e.description || '',
       status: e.status === 'complete' ? 'complete' : 'draft',
-      domain: e.domain || '',
+      domain: domain,
       impact: e.impact || '',
       date: e.date || todayIso(),
       tags: {
@@ -76,26 +86,27 @@
         tenets: Array.isArray(e.tags && e.tags.tenets) ? e.tags.tenets.slice() : [],
         principles: Array.isArray(e.tags && e.tags.principles) ? e.tags.principles.slice() : []
       },
-      /* Domain-specific fields — People Management */
-      interactionType: e.interactionType || '',
-      interactionTypeOther: e.interactionTypeOther || '',
-      meetingDirection: e.meetingDirection || '',
-      individual: e.individual || '',
-      sentiment: e.sentiment || '',
-      developmentTheme: e.developmentTheme || '',
-      developmentThemeOther: e.developmentThemeOther || '',
-      followUpAction: e.followUpAction || '',
-      followUpDescription: e.followUpDescription || '',
-      followUpTargetDate: e.followUpTargetDate || '',
-      followUpDismissed: !!e.followUpDismissed,
-      /* Domain-specific fields — Client Facing */
-      companyName: e.companyName || '',
-      customerSentiment: e.customerSentiment || '',
-      escalationNumber: e.escalationNumber || '',
-      escalationUrl: e.escalationUrl || '',
-      /* Domain-specific fields — Project */
-      projectNumber: e.projectNumber || '',
-      projectUrl: e.projectUrl || '',
+      /* Domain-specific fields — People Management + Client Facing */
+      interactionType: (isPeople || isClient) ? (e.interactionType || '') : '',
+      interactionTypeOther: (isPeople || isClient) ? (e.interactionTypeOther || '') : '',
+      individual: (isPeople || isClient) ? (e.individual || '') : '',
+      followUpAction: (isPeople || isClient) ? (e.followUpAction || '') : '',
+      followUpDescription: (isPeople || isClient) ? (e.followUpDescription || '') : '',
+      followUpTargetDate: (isPeople || isClient) ? (e.followUpTargetDate || '') : '',
+      followUpDismissed: (isPeople || isClient) ? !!e.followUpDismissed : false,
+      /* Domain-specific fields — People Management only */
+      meetingDirection: isPeople ? (e.meetingDirection || '') : '',
+      sentiment: isPeople ? (e.sentiment || '') : '',
+      developmentTheme: isPeople ? (e.developmentTheme || '') : '',
+      developmentThemeOther: isPeople ? (e.developmentThemeOther || '') : '',
+      /* Domain-specific fields — Client Facing only */
+      companyName: isClient ? (e.companyName || '') : '',
+      customerSentiment: isClient ? (e.customerSentiment || '') : '',
+      escalationNumber: isClient ? (e.escalationNumber || '') : '',
+      escalationUrl: isClient ? (e.escalationUrl || '') : '',
+      /* Domain-specific fields — Project only */
+      projectNumber: isProject ? (e.projectNumber || '') : '',
+      projectUrl: isProject ? (e.projectUrl || '') : '',
       archived: !!e.archived,
       createdAt: e.createdAt || now,
       updatedAt: now
