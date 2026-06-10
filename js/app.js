@@ -28,7 +28,10 @@
     const root = document.getElementById('view');
     /* Active nav state */
     document.querySelectorAll('.nav a').forEach(function (a) {
-      a.classList.toggle('active', a.getAttribute('data-route') === name);
+      var active = a.getAttribute('data-route') === name;
+      a.classList.toggle('active', active);
+      if (active) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
     });
     document.title = 'Uptrack — ' + routes[name].title;
     updateFollowupsBadge();

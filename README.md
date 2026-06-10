@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.17.0**
+**v2.18.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -228,6 +228,30 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.18.0
+- **Type hierarchy.** Page titles grew to 26px; section and group
+  headings switched from uppercase microtype to sentence case at
+  readable sizes. The uppercase letterspaced style is now reserved for
+  one level: annotation labels (form labels, stat labels, chart titles).
+- **Keyboard focus & accessibility.** Global `:focus-visible` outline on
+  every interactive element; the active nav link carries
+  `aria-current="page"`; Settings toggle switches are real
+  keyboard-operable switches (`role="switch"`, `aria-checked`,
+  Space/Enter); modals declare `role="dialog"`/`aria-modal` and trap Tab
+  focus inside.
+- **Chart tooltips.** Every chart primitive (bars, lines, stacks,
+  groups, gap indicator) now carries native hover tooltips with the
+  exact label and value. Horizontal bar charts share the gap
+  indicator's label gutter so adjacent cards align.
+- **Data Review two-column grid.** Compact widgets pair up side by
+  side; hero widgets (summary, visibility index, period comparison,
+  individual view) span the full width. Roughly halves the scroll.
+- **Motion.** Subtle fade/rise on view renders and modal entrance,
+  fully disabled under `prefers-reduced-motion`.
+- **Semantic stat colors.** Stat values are neutral by default; accent
+  marks the headline number per row, red flags attention-worthy counts
+  (overdue follow-ups, open actions).
 
 ### v2.17.0
 - **Design polish.** First of a design-focused release series:

@@ -116,7 +116,7 @@
     const hc = allEntries.filter(function (e) { return e.impact === 'High' || e.impact === 'Critical'; });
     const hcPct = allEntries.length > 0 ? Math.round((hc.length / allEntries.length) * 100) + '%' : '0%';
     const stats = ui.el('div', { class: 'stats-row' }, [
-      ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Total entries'),  ui.el('div', { class: 'value' }, allEntries.length)]),
+      ui.el('div', { class: 'stat-card accent' }, [ui.el('div', { class: 'label' }, 'Total entries'),  ui.el('div', { class: 'value' }, allEntries.length)]),
       ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Completed'),      ui.el('div', { class: 'value' }, complete.length)]),
       ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Drafts'),         ui.el('div', { class: 'value' }, drafts.length)]),
       ui.el('div', { class: 'stat-card' }, [ui.el('div', { class: 'label' }, 'Client facing'),  ui.el('div', { class: 'value' }, clientFacing.length)]),

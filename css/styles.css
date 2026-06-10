@@ -573,7 +573,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-:root[data-theme-pack="futuristic"] .stat-card .value {
+:root[data-theme-pack="futuristic"] .stat-card.accent .value {
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   background-clip: text;
@@ -672,6 +672,13 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: var(-
 
 h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
 
+/* Keyboard focus — visible on every interactive element, mouse clicks
+ * unaffected (:focus-visible). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ========== Top bar ========== */
 .topbar {
   display: flex;
@@ -731,6 +738,14 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
   margin: 0 auto;
   padding: 32px 28px 80px;
 }
+/* Each route render rebuilds the view's children, so newly inserted
+ * top-level blocks get a single quick fade/rise — enough to make
+ * navigation feel intentional without slowing anything down. */
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.view > * { animation: view-in 0.18s ease-out both; }
 .page-header {
   display: flex;
   align-items: baseline;
@@ -742,20 +757,21 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
 .page-title {
   margin: 0;
   font-family: var(--font-head);
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: 0.3px;
+  letter-spacing: -0.01em;
 }
 .page-sub { color: var(--text-faint); font-size: 12px; margin-top: 2px; }
 
 .section { margin-bottom: 36px; }
+/* Hierarchy note: section/group headings are sentence-case at readable
+ * sizes; the uppercase letterspaced microtype is reserved for one level —
+ * annotation labels (form labels, stat labels, chart titles). */
 .section-title {
   font-family: var(--font-head);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.1px;
-  color: var(--text-faint);
+  color: var(--text-dim);
   margin: 0 0 12px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
@@ -1039,8 +1055,6 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
   font-family: var(--font-head);
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.9px;
   color: var(--text-dim);
   margin: 22px 0 10px;
   padding-bottom: 5px;
@@ -1124,7 +1138,12 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
   padding: 14px 16px;
 }
 .stat-card .label { color: var(--text-faint); font-family: var(--font-head); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; }
-.stat-card .value { color: var(--accent); font-size: 22px; font-weight: 700; font-family: var(--mono); margin-top: 4px; }
+/* Stat values are neutral by default; color is semantic — `.accent` marks
+ * the one headline number per row, `.danger` flags numbers that demand
+ * attention (e.g. overdue counts). */
+.stat-card .value { color: var(--text); font-size: 22px; font-weight: 700; font-family: var(--mono); margin-top: 4px; }
+.stat-card.accent .value { color: var(--accent); }
+.stat-card.danger .value { color: var(--impact-critical); }
 
 /* ========== Data Review widget dashboard ========== */
 .dr-widget-toggle {
@@ -1177,13 +1196,20 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
   border-top: 1px dashed var(--border);
 }
 
+/* Two-column widget grid: compact charts pair up, hero widgets span both. */
+.dr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
 .dr-widget {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px 20px 22px;
-  margin-bottom: 18px;
 }
+.dr-widget.dr-wide { grid-column: 1 / -1; }
 .dr-widget h3.dr-widget-title {
   margin: 0 0 4px;
   font-family: var(--font-head);
@@ -1381,6 +1407,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
 
 @media (max-width: 860px) {
   .dr-widget-toggle .dr-toggle-list { grid-template-columns: 1fr 1fr; }
+  .dr-grid { grid-template-columns: 1fr; }
   .dr-period { grid-template-columns: 1fr; }
   .dr-visibility-hero { grid-template-columns: 1fr; }
 }
@@ -1396,6 +1423,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
   padding: 40px 20px;
   z-index: 100;
   overflow-y: auto;
+  animation: backdrop-in 0.15s ease-out;
 }
 .modal {
   background: var(--surface);
@@ -1405,6 +1433,12 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
   max-width: 740px;
   box-shadow: 0 20px 50px var(--shadow);
   overflow: hidden;
+  animation: modal-in 0.16s ease-out;
+}
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
 }
 .modal-header {
   display: flex;
@@ -1413,7 +1447,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
 }
-.modal-header h3 { margin: 0; font-family: var(--font-head); font-size: 14px; color: var(--text); font-weight: 700; letter-spacing: 0.3px; }
+.modal-header h3 { margin: 0; font-family: var(--font-head); font-size: 16px; color: var(--text); font-weight: 700; letter-spacing: 0.2px; }
 .modal-close {
   background: transparent;
   border: none;
@@ -1577,6 +1611,15 @@ pre.code {
   white-space: pre-wrap;
   max-height: 500px;
   overflow-y: auto;
+}
+
+/* ========== Reduced motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.001s !important;
+  }
 }
 
 /* ========== Scrollbar ========== */

@@ -17,20 +17,21 @@
 
   const SETTINGS_KEY = 'dataReviewWidgets';
 
-  /* Widget registry — ordered top-to-bottom on the page.
+  /* Widget registry — laid out in a two-column grid; `wide: true` widgets
+   * span both columns (hero panels and anything with its own sub-layout).
    * `render(ctx)` returns a DOM node; ctx = { matched, allEntries, state, refresh }. */
   const WIDGETS = [
-    { id: 'summary',      title: 'Summary statistics',                 render: renderSummary },
+    { id: 'summary',      title: 'Summary statistics',                 render: renderSummary,            wide: true },
     { id: 'domainTime',   title: 'Domain distribution over time',      render: renderDomainOverTime },
+    { id: 'impactDomain', title: 'Cross-dimensional: impact by domain', render: renderImpactByDomain },
     { id: 'values',       title: 'Company values alignment',           render: renderValuesAlignment },
     { id: 'tenets',       title: 'Culture tenets alignment',           render: renderTenetsAlignment },
     { id: 'principles',   title: 'Principles alignment',               render: renderPrinciplesAlignment },
-    { id: 'gap',          title: 'Taxonomy gap indicator',             render: renderGap },
     { id: 'impactTime',   title: 'Impact quality over time',           render: renderImpactQuality },
-    { id: 'impactDomain', title: 'Cross-dimensional: impact by domain', render: renderImpactByDomain },
-    { id: 'visibility',   title: 'Visibility index',                   render: renderVisibility },
-    { id: 'period',       title: 'Period comparison',                  render: renderPeriod },
-    { id: 'individual',   title: 'Individual manager view',            render: renderIndividual }
+    { id: 'gap',          title: 'Taxonomy gap indicator',             render: renderGap },
+    { id: 'visibility',   title: 'Visibility index',                   render: renderVisibility,         wide: true },
+    { id: 'period',       title: 'Period comparison',                  render: renderPeriod,             wide: true },
+    { id: 'individual',   title: 'Individual manager view',            render: renderIndividual,         wide: true }
   ];
 
   let state = {
@@ -113,15 +114,17 @@
         return;
       }
 
+      const grid = ui.el('div', { class: 'dr-grid' });
       WIDGETS.forEach(function (w) {
         if (!state.widgetVisibility[w.id]) return;
         const body = w.render(ctx);
-        const wrapper = ui.el('div', { class: 'dr-widget', 'data-widget': w.id }, [
+        const wrapper = ui.el('div', { class: 'dr-widget' + (w.wide ? ' dr-wide' : ''), 'data-widget': w.id }, [
           ui.el('h3', { class: 'dr-widget-title' }, w.title),
           body
         ]);
-        content.appendChild(wrapper);
+        grid.appendChild(wrapper);
       });
+      content.appendChild(grid);
 
       if (!matched.length) {
         /* Friendly prompt if the filter produced zero results and every widget
@@ -225,13 +228,13 @@
     const body = ui.el('div', null, [
       widgetSub('Headline metrics across the ' + m.length + ' entries currently in scope.'),
       ui.el('div', { class: 'stats-row' }, [
-        statCard('Total', m.length),
+        statCard('Total', m.length, 'accent'),
         statCard('Completed', complete),
         statCard('Critical', crit),
         statCard('High', high),
         statCard('Client facing', cf),
         statCard('High + Critical', hcPct),
-        statCard('Open follow-ups', openFu)
+        statCard('Open follow-ups', openFu, openFu ? 'danger' : '')
       ])
     ]);
     return body;
@@ -614,8 +617,8 @@
 
   /* ---------- shared widget helpers ---------- */
 
-  function statCard(label, value) {
-    return ui.el('div', { class: 'stat-card' }, [
+  function statCard(label, value, kind) {
+    return ui.el('div', { class: 'stat-card' + (kind ? ' ' + kind : '') }, [
       ui.el('div', { class: 'label' }, label),
       ui.el('div', { class: 'value' }, value)
     ]);

@@ -68,7 +68,7 @@
       var cf   = matched.filter(function (e) { return e.domain === 'Client Facing'; }).length;
       var hcPct = matched.length > 0 ? Math.round(((crit + high) / matched.length) * 100) + '%' : '0%';
       content.appendChild(ui.el('div', { class: 'stats-row' }, [
-        stat('Matched', matched.length),
+        stat('Matched', matched.length, 'accent'),
         stat('Critical', crit),
         stat('High', high),
         stat('High + Critical', hcPct),
@@ -136,8 +136,8 @@
     ui.openModal('Stakeholder export preview', body);
   }
 
-  function stat(label, value) {
-    return ui.el('div', { class: 'stat-card' }, [
+  function stat(label, value, kind) {
+    return ui.el('div', { class: 'stat-card' + (kind ? ' ' + kind : '') }, [
       ui.el('div', { class: 'label' }, label),
       ui.el('div', { class: 'value' }, value)
     ]);

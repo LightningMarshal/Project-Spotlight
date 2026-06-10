@@ -82,12 +82,21 @@
 
   function renderToggles(state, onChange) {
     function toggle(label, desc, active, onToggle) {
+      function flip() {
+        var next = !sw.classList.contains('active');
+        sw.classList.toggle('active');
+        sw.setAttribute('aria-checked', next ? 'true' : 'false');
+        onToggle(next);
+      }
       var sw = ui.el('div', {
         class: 'toggle-switch' + (active ? ' active' : ''),
-        onclick: function () {
-          var next = !sw.classList.contains('active');
-          sw.classList.toggle('active');
-          onToggle(next);
+        role: 'switch',
+        tabindex: '0',
+        'aria-checked': active ? 'true' : 'false',
+        'aria-label': label,
+        onclick: flip,
+        onkeydown: function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
         }
       });
       return ui.el('div', { class: 'toggle-row' }, [

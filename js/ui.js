@@ -130,10 +130,10 @@
       closeModal();
     }
 
-    const modal = el('div', { class: 'modal' }, [
+    const modal = el('div', { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, [
       el('div', { class: 'modal-header' }, [
         el('h3', null, title),
-        el('button', { class: 'modal-close', title: 'Close', onclick: requestClose }, '×')
+        el('button', { class: 'modal-close', title: 'Close', 'aria-label': 'Close dialog', onclick: requestClose }, '×')
       ]),
       el('div', { class: 'modal-body' }, bodyNode)
     ]);
@@ -145,7 +145,22 @@
     root.appendChild(backdrop);
     document.body.style.overflow = 'hidden';
     _modalKeyHandler = function (e) {
-      if (e.key === 'Escape' && !opts.persistent) requestClose();
+      if (e.key === 'Escape' && !opts.persistent) { requestClose(); return; }
+      /* Focus trap — Tab cycles within the modal instead of escaping to
+       * the page underneath. */
+      if (e.key === 'Tab') {
+        const focusables = modal.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && (document.activeElement === first || !modal.contains(document.activeElement))) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && (document.activeElement === last || !modal.contains(document.activeElement))) {
+          e.preventDefault(); first.focus();
+        }
+      }
     };
     document.addEventListener('keydown', _modalKeyHandler);
     return { modal: modal, backdrop: backdrop };
