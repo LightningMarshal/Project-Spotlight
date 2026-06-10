@@ -64,10 +64,6 @@
     ]);
     root.appendChild(qc);
 
-    /* Tagline */
-    root.appendChild(ui.el('div', { class: 'tagline' },
-      'Every organization should be so effective at security operations that both the likelihood and impact of a cyber attack is minimized to the point where risk is essentially zero.'));
-
     setTimeout(function () { input.focus(); }, 20);
 
     /* Drafts — prominent */
@@ -83,12 +79,13 @@
     }
     root.appendChild(draftSection);
 
-    /* Recent */
+    /* Recent — drafts are excluded here because they already have their own
+     * (more prominent) section above; listing them twice just adds noise. */
     const today = ui.today();
     const sevenDaysAgo = new Date(today); sevenDaysAgo.setDate(today.getDate() - 7);
     const recent = allEntries.filter(function (e) {
       const d = ui.parseIso(e.date);
-      return d >= sevenDaysAgo && d <= today;
+      return e.status !== 'draft' && d >= sevenDaysAgo && d <= today;
     });
     const recentSection = ui.el('section', { class: 'section' }, [
       ui.el('h2', { class: 'section-title' }, 'Last 7 days — ' + recent.length)

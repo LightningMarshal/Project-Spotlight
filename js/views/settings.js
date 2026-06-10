@@ -71,6 +71,11 @@
     /* Archive management */
     root.appendChild(ui.el('h2', { class: 'section-title' }, 'Entry archive — ' + archivedEntries.length));
     root.appendChild(renderArchivePanel(allEntries, archivedEntries, function () { render(root); }));
+
+    /* Mission tagline — lives here rather than on Today so the capture
+     * screen stays focused on capturing. */
+    root.appendChild(ui.el('div', { class: 'tagline', style: { marginTop: '36px', textAlign: 'center' } },
+      'Every organization should be so effective at security operations that both the likelihood and impact of a cyber attack is minimized to the point where risk is essentially zero.'));
   }
 
   /* ---------- Toggles ---------- */

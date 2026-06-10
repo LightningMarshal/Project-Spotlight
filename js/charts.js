@@ -58,14 +58,14 @@
       },
       tax: {
         values:     cssVar('--tax-values', '#d4a054'),
-        tenets:     cssVar('--tax-tenets', '#c48940'),
-        principles: cssVar('--tax-princ',  '#b87a30')
+        tenets:     cssVar('--tax-tenets', '#45a995'),
+        principles: cssVar('--tax-princ',  '#6b93d6')
       },
       domain: {
         'Operations':        cssVar('--domain-operations',        '#e8923e'),
-        'Project':           cssVar('--domain-project',           '#d4a054'),
-        'People Management': cssVar('--domain-people-management', '#c48940'),
-        'Client Facing':     cssVar('--domain-client-facing',     '#b87a30')
+        'Project':           cssVar('--domain-project',           '#5b8dd9'),
+        'People Management': cssVar('--domain-people-management', '#3fb59b'),
+        'Client Facing':     cssVar('--domain-client-facing',     '#b07cc6')
       },
       /* semantic */
       zero:     cssVar('--impact-critical', '#d95535'),
@@ -584,7 +584,16 @@
       }
     }
 
-    return svg({ viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMidYMid meet' }, children);
+    /* Rendered 1:1 (width/height attrs + the .heatmap CSS override) rather
+     * than stretched to the card width like other charts — scaling up a
+     * ~250px viewBox blows the day cells and labels up to comical size. */
+    return svg({
+      viewBox: '0 0 ' + W + ' ' + H,
+      width: W,
+      height: H,
+      class: 'heatmap',
+      preserveAspectRatio: 'xMidYMid meet'
+    }, children);
   }
 
   /* Current consecutive-day capture streak, by entry date. A day counts if

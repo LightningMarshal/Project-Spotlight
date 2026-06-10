@@ -50,12 +50,15 @@
   --impact-high:     #e8883a;
   --impact-critical: #d95535;
 
+  /* Taxonomy hues are deliberately distinct (gold / teal / slate blue) so
+   * chips and charts are tellable apart at a glance — amber stays reserved
+   * for brand and actions. */
   --tax-values:     #d4a054;
   --tax-values-bg:  #231b0e;
-  --tax-tenets:     #c48940;
-  --tax-tenets-bg:  #201808;
-  --tax-princ:      #b87a30;
-  --tax-princ-bg:   #1d1508;
+  --tax-tenets:     #45a995;
+  --tax-tenets-bg:  #0e211d;
+  --tax-princ:      #6b93d6;
+  --tax-princ-bg:   #131a28;
 
   --radius:    4px;
   --radius-lg: 8px;
@@ -100,12 +103,12 @@
   --impact-high:     #d47a1e;
   --impact-critical: #c44525;
 
-  --tax-values:     #b88a30;
+  --tax-values:     #a87820;
   --tax-values-bg:  #fdf0d8;
-  --tax-tenets:     #a87828;
-  --tax-tenets-bg:  #fceccc;
-  --tax-princ:      #986a20;
-  --tax-princ-bg:   #fae8c0;
+  --tax-tenets:     #1f8f78;
+  --tax-tenets-bg:  #ddf2ed;
+  --tax-princ:      #3a6fc4;
+  --tax-princ-bg:   #e2ebfa;
 
   --backdrop: rgba(15,19,25,0.35);
   --shadow: rgba(0,0,0,0.12);
@@ -141,12 +144,12 @@
     --impact-medium:   #b88a30;
     --impact-high:     #d47a1e;
     --impact-critical: #c44525;
-    --tax-values:     #b88a30;
+    --tax-values:     #a87820;
     --tax-values-bg:  #fdf0d8;
-    --tax-tenets:     #a87828;
-    --tax-tenets-bg:  #fceccc;
-    --tax-princ:      #986a20;
-    --tax-princ-bg:   #fae8c0;
+    --tax-tenets:     #1f8f78;
+    --tax-tenets-bg:  #ddf2ed;
+    --tax-princ:      #3a6fc4;
+    --tax-princ-bg:   #e2ebfa;
     --backdrop: rgba(15,19,25,0.35);
     --shadow: rgba(0,0,0,0.12);
     --shadow-card: 0 1px 2px rgba(15,19,25,0.08), 0 4px 14px rgba(15,19,25,0.06);
@@ -200,6 +203,13 @@
   --font: "Inter", "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
 
+  /* Glass-panel + on-accent tokens: the pack's frosted surfaces and the
+   * text color on accent-gradient fills must flip with the mode — they
+   * were previously hard-coded dark, which broke light mode. */
+  --glass:     rgba(5,6,13,0.85);
+  --glass-2:   rgba(12,16,40,0.7);
+  --on-accent: #05060d;
+
   --backdrop: rgba(2,3,8,0.85);
   --shadow: rgba(0,229,255,0.15);
   --shadow-card: 0 0 0 1px rgba(0,229,255,0.08), 0 2px 8px rgba(0,229,255,0.06);
@@ -245,6 +255,10 @@
   --tax-princ:      #6028c0;
   --tax-princ-bg:   #ece0ff;
 
+  --glass:     rgba(255,255,255,0.85);
+  --glass-2:   rgba(255,255,255,0.72);
+  --on-accent: #ffffff;
+
   --backdrop: rgba(10,20,48,0.35);
   --shadow: rgba(0,112,212,0.2);
   --shadow-card: 0 0 0 1px rgba(0,112,212,0.1), 0 2px 8px rgba(0,112,212,0.08);
@@ -288,6 +302,9 @@
     --tax-tenets-bg:  #ffe0f0;
     --tax-princ:      #6028c0;
     --tax-princ-bg:   #ece0ff;
+    --glass:     rgba(255,255,255,0.85);
+    --glass-2:   rgba(255,255,255,0.72);
+    --on-accent: #ffffff;
     --backdrop: rgba(10,20,48,0.35);
     --shadow: rgba(0,112,212,0.2);
     --shadow-card: 0 0 0 1px rgba(0,112,212,0.1), 0 2px 8px rgba(0,112,212,0.08);
@@ -480,7 +497,7 @@
   background-attachment: fixed;
 }
 :root[data-theme-pack="futuristic"] .topbar {
-  background: rgba(5,6,13,0.85);
+  background: var(--glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--accent);
@@ -524,7 +541,7 @@
 }
 :root[data-theme-pack="futuristic"] .btn.primary {
   background: var(--accent-gradient);
-  color: #05060d;
+  color: var(--on-accent);
   border: none;
   box-shadow: 0 0 0 1px rgba(0,229,255,0.4), 0 0 20px var(--accent-glow);
   font-weight: 700;
@@ -537,7 +554,7 @@
 :root[data-theme-pack="futuristic"] .quick-capture,
 :root[data-theme-pack="futuristic"] .chart-card,
 :root[data-theme-pack="futuristic"] .form {
-  background: rgba(12,16,40,0.7);
+  background: var(--glass-2);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: var(--shadow-card);
@@ -1091,6 +1108,9 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
 }
 .chart-card h4 { margin: 0 0 12px; font-family: var(--font-head); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-faint); }
 .chart-card svg { width: 100%; display: block; }
+/* The capture heatmap renders at its natural pixel size (GitHub-style
+ * cells), shrinking only when the card is narrower than the grid. */
+.chart-card svg.heatmap { width: auto; max-width: 100%; height: auto; }
 .chart-empty { color: var(--text-faint); font-size: 12px; text-align: center; padding: 20px; }
 
 /* ========== Stats ========== */
@@ -1289,21 +1309,74 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); }
 }
 
 /* Expose domain colors as overrideable CSS variables so each theme
- * pack can tune the palette independently. Fallbacks match Arctic dark. */
+ * pack can tune the palette independently. Hues are deliberately distinct
+ * (amber / blue / teal / plum) so stacked and grouped domain charts are
+ * readable as categories — except Minimal, which stays a mono ramp by
+ * design. */
 :root,
 :root[data-theme-pack="arctic"],
 :root[data-theme-pack="arctic"][data-theme-mode="dark"] {
   --domain-operations:        #e8923e;
-  --domain-project:           #d4a054;
-  --domain-people-management: #c48940;
-  --domain-client-facing:     #b87a30;
+  --domain-project:           #5b8dd9;
+  --domain-people-management: #3fb59b;
+  --domain-client-facing:     #b07cc6;
 }
 :root[data-theme-pack="arctic"][data-theme-mode="light"],
 :root[data-theme="light"] {
   --domain-operations:        #d07a0e;
-  --domain-project:           #b88a30;
-  --domain-people-management: #a87828;
-  --domain-client-facing:     #986a20;
+  --domain-project:           #3a6fc4;
+  --domain-people-management: #1f8f78;
+  --domain-client-facing:     #9059ad;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme-pack="arctic"][data-theme-mode="system"] {
+    --domain-operations:        #d07a0e;
+    --domain-project:           #3a6fc4;
+    --domain-people-management: #1f8f78;
+    --domain-client-facing:     #9059ad;
+  }
+}
+:root[data-theme-pack="futuristic"],
+:root[data-theme-pack="futuristic"][data-theme-mode="dark"] {
+  --domain-operations:        #00e5ff;
+  --domain-project:           #a855ff;
+  --domain-people-management: #ff4da6;
+  --domain-client-facing:     #ffd93d;
+}
+:root[data-theme-pack="futuristic"][data-theme-mode="light"] {
+  --domain-operations:        #0070d4;
+  --domain-project:           #6028c0;
+  --domain-people-management: #c0007a;
+  --domain-client-facing:     #c98800;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme-pack="futuristic"][data-theme-mode="system"] {
+    --domain-operations:        #0070d4;
+    --domain-project:           #6028c0;
+    --domain-people-management: #c0007a;
+    --domain-client-facing:     #c98800;
+  }
+}
+:root[data-theme-pack="minimal"],
+:root[data-theme-pack="minimal"][data-theme-mode="dark"] {
+  --domain-operations:        #d0d0d6;
+  --domain-project:           #a0a0a8;
+  --domain-people-management: #808088;
+  --domain-client-facing:     #606068;
+}
+:root[data-theme-pack="minimal"][data-theme-mode="light"] {
+  --domain-operations:        #27272a;
+  --domain-project:           #52525b;
+  --domain-people-management: #7a7a82;
+  --domain-client-facing:     #a0a0a8;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme-pack="minimal"][data-theme-mode="system"] {
+    --domain-operations:        #27272a;
+    --domain-project:           #52525b;
+    --domain-people-management: #7a7a82;
+    --domain-client-facing:     #a0a0a8;
+  }
 }
 
 @media (max-width: 860px) {
