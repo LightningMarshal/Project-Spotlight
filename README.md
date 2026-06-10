@@ -1,6 +1,6 @@
 # Uptrack
 
-**v2.15.0**
+**v2.16.0**
 
 A locally hosted, browser-based work impact tracking application for senior
 managers. Uptrack captures accomplishments with minimal friction, organizes
@@ -228,6 +228,49 @@ follow-up dismiss/reopen, monthly reflection auto-save, archive toggle,
 and the backup download itself.
 
 ## Changelog
+
+### v2.16.0
+- **Taxonomy notes removed end-to-end.** The notes feature had been
+  deliberately removed from the product; the v2.15.0 UI restored it by
+  mistake. This release removes the Settings section, the db API
+  (`setTaxonomyNote` / `getAllTaxonomyNotes`), and the `taxonomyNotes`
+  key from full backups. `BACKUP_VERSION` stays 2 — older backups
+  containing the key restore cleanly (it is simply ignored), and fresh
+  databases no longer create the store.
+- **CSV export covers every field.** `generalCsv` now emits the 15
+  domain-specific columns (interaction type, meeting direction,
+  individual, sentiment, development theme, the four follow-up fields,
+  company, customer sentiment, escalation number/URL, project
+  number/URL) plus `archived` — 28 columns total. "Other" enum
+  selections emit the custom label. Note: the core column order is
+  unchanged, but anything keyed by column *index* past column 10
+  (`principles`) shifts; `createdAt`/`updatedAt` are now last.
+- **Capture-streak heatmap on Today.** A GitHub-style grid of the
+  trailing 13 weeks (Monday–Sunday columns) shows per-day capture
+  intensity, with a consecutive-day streak readout. Counts key off the
+  entry `date`, so backfilled work lights the day it happened; a
+  not-yet-logged today doesn't break the streak.
+- **Overdue follow-ups nav badge.** The Follow-Ups nav link shows a
+  count of open follow-ups past their target date. It refreshes on
+  every navigation, after dismiss/reopen in the Follow-Ups view, and
+  after entry saves/deletes.
+- **Duplicate entry.** Editing an entry now offers a Duplicate button
+  that opens a fresh draft copy (dated today, follow-up not dismissed)
+  prefilled with everything on screen — including unsaved edits — for
+  recurring work like 1:1s.
+- **People search.** The filter search box now also matches the
+  Individual, Company Name, and Follow-Up Action fields, so "everything
+  about Alice" is a one-box query.
+- **Print stylesheet.** Printing any view now forces a light palette,
+  hides navigation/filters/buttons, and keeps cards intact across page
+  breaks. Known limitation: SVG charts bake theme colors at render
+  time, so a dark-theme session prints charts with on-screen colors.
+- **`Alt+N` replaces `Ctrl/Cmd+N` for "new full entry".** Browsers
+  reserve Ctrl+N for "new window" and never deliver it to the page, so
+  the old binding silently did nothing. Alt+N joins the existing
+  Alt-key navigation family and is guarded against firing while a
+  modal is open.
+- **"Last 7 days" on Today no longer includes future-dated entries.**
 
 ### v2.15.0
 - **Taxonomy notes UI.** The `taxonomyNotes` object store has had a full
